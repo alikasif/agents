@@ -38,7 +38,7 @@ def explain_top_picks(df: pd.DataFrame, top_n=3) -> str:
 
 def analyze_data(data: List[Dict]) :
 
-    open_api_key='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'
+    open_api_key=''
 
     llm = ChatOpenAI(model_name="gpt-4", temperature=0.3, openai_api_key=open_api_key)
 
