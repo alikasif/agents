@@ -12,15 +12,11 @@ This project leverages a multi-agent architecture to ensure high-quality prompt 
 1. **User Input:** The user provides a description of the task they want to achieve.
 2. **Prompt Generation:** Three specialized agents generate candidate prompts based on the user's input.
 3. **Prompt Judging:** Two judging agents evaluate the generated prompts and select the best one(s).
-4. **Prompt Execution:** Three execution agents use the selected prompt(s) to interact with the LLM and obtain results.
-5. **Output Judging:** Two output judging agents evaluate the results from the execution agents to determine the best final answer.
-6. **Result Delivery:** The system returns the user input, the selected/generated prompt, and the final LLM output to the user.
+4. **Result Delivery:** The system returns the user input, the selected/generated prompt, and the final LLM output to the user.
 
 ## Agent Roles
 - **Prompt Generators (3 agents):** Generate diverse and high-quality prompts for the user's task.
 - **Prompt Judges (2 agents):** Evaluate and select the most effective prompt(s) from the generated candidates.
-- **Prompt Executors (3 agents):** Execute the selected prompt(s) using the LLM and collect outputs.
-- **Output Judges (2 agents):** Assess the outputs from the executors and determine the best final answer.
 
 ## Features
 - Multi-agent collaboration for robust prompt generation and evaluation
