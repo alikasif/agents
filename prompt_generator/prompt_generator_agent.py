@@ -1,8 +1,6 @@
-from dotenv import load_dotenv
 import sys
-from agents import Agent, Runner, trace, function_tool, OpenAIChatCompletionsModel, input_guardrail, GuardrailFunctionOutput
+from agents import Agent, Runne
 import os
-import asyncio
 from openai import AsyncOpenAI
 from pydantic import BaseModel
 
@@ -80,7 +78,6 @@ def create_agents_from_env():
     Reads model names and API keys for GPT, Anthropic Sonnet, and Gemini from a .env file,
     then creates and returns the three agents. Exits with an error if any required variable is missing.
     """
-    load_dotenv(override=True)
 
     gpt_model = os.getenv("OPENAI_MODEL")
     gpt_key = os.getenv("OPENAI_API_KEY")
