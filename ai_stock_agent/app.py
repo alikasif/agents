@@ -24,9 +24,9 @@ def get_nse_tickers(limit=200):
     options.add_argument("--disable-gpu")
 
     chrome_options = Options()
-    chrome_options.binary_location = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"  # Adjust as needed
+    chrome_options.binary_location = ""  # Adjust as needed
 
-    service = Service("C:\\Users\\kasif\\chromedriver-win64\\chromedriver.exe")
+    service = Service("")
     driver = webdriver.Chrome(service=service, options=options)
     driver.get(url)
     time.sleep(2)

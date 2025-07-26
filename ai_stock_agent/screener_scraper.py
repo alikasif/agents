@@ -9,8 +9,8 @@ import streamlit as st
 import requests
 from bs4 import BeautifulSoup
 
-CHROMEDRIVER_PATH = "C:\\Users\\kasif\\chromedriver-win64\\chromedriver.exe"
-CHROME_USER_DATA_DIR = "D:\\tmp1\\"
+CHROMEDRIVER_PATH = ""
+CHROME_USER_DATA_DIR = ""
 
 def extract_key_metrics(soup):
     metrics = {}
@@ -36,7 +36,7 @@ def extract_key_metrics(soup):
 def get_company_data_screener(ticker: str):
 
     CHROME_DRIVER_PATH = CHROMEDRIVER_PATH
-    CHROME_BINARY_PATH = "C:/Program Files/Google/Chrome/Application/chrome.exe"  # <-- Replace if needed
+    CHROME_BINARY_PATH = ""  # <-- Replace if needed
 
     # === SETUP CHROME ===
     options = Options()
@@ -102,7 +102,7 @@ def get_company_data_screener(ticker: str):
 def get_company_data_screener3(ticker: str):
 
     CHROME_DRIVER_PATH = CHROMEDRIVER_PATH
-    CHROME_BINARY_PATH = "C:/Program Files/Google/Chrome/Application/chrome.exe"  # Adjust if needed
+    CHROME_BINARY_PATH = ""  # Adjust if needed
 
     # === SETUP DRIVER ===
     options = Options()
