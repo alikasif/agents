@@ -7,74 +7,6 @@ from openai import AsyncOpenAI
 from pydantic import BaseModel
 
 
-class PromptAgentOutput(BaseModel):
-    agent_name: str
-    generated_prompt: str
-
-class CallingAgentOutput(BaseModel):
-    prompts: list[PromptAgentOutput]
-    
-
-
-# --- Single judging agent instruction ---
-JUDGE_INSTRUCTIONS = (
-    "You are a prompt evaluation expert. \
-     Given a user input and three prompts generatar tools, your job is to call the tools with user input to get the prompt and judge them by \
-     assign a score (1-10) to each prompt based on how well it enables an LLM to accomplish the user's task. \
-     Consider clarity, completeness, specificity, and alignment with the user input. Then, rank the prompts from best to worst. \
-     Return your answer as a JSON object with keys: 'scores' (a dict of agent names to scores) and 'ranking' (a list of agent names in order from best to worst) and the highest ranked prompt."
-)
-
-GENERATE_INSTRUCTIONS = (
-    "You are a prompt generation expert. \
-     Given a user input and three prompts generatar tools, your job is to call the tools with user input to get the prompt  \
-     Return your answer as a JSON object with keys: 'user_input' (input provided by user), 'prompts' (list of objects with each object having agent name and its generated prompt)."
-)
-
-def get_all_prompt_agents_as_tools():
-    """
-    Returns the three prompt generator agents (gpt_agent, anthropic_agent, gemini_agent) using create_agents_from_env from prompt_generator_agent.py
-    """
-    gpt_agent, anthropic_agent, gemini_agent =  create_agents_from_env()
-    description = "generate prompt for user input"
-    # The tools are the three agents
-    tools = [
-        gpt_agent.as_tool(tool_name="gpt_agent", tool_description=description), 
-        anthropic_agent.as_tool(tool_name="anthropic_agent", tool_description=description),
-        gemini_agent.as_tool(tool_name="gemini_agent", tool_description=description)
-    ]
-
-    return tools
-
-
-def create_prompt_agent_with_tools(instructions):
-    """
-    Creates a GPT agent and uses the agents returned from get_all_prompt_agents as its tools.
-    Returns the new GPT agent.
-    """    
-
-    agent = Agent(
-        name="GPTAgentWithTools",
-        instructions=instructions,
-        model=os.getenv("OPENAI_MODEL"),
-        tools=get_all_prompt_agents_as_tools(),
-        output_type=CallingAgentOutput,
-    )
-    return agent
-
-
-async def generate_prompt(user_task):
-    """
-    Given a user task description, use the agent to generate a high-quality prompt for an LLM.
-    """
-    # The agent expects a message or input; we pass the user_task as the input.
-    response = await Runner.run(create_prompt_agent_with_tools(GENERATE_INSTRUCTIONS), user_task)
-    # If the response is a dict or object, extract the text; otherwise, return as is.
-    if isinstance(response, dict) and "output" in response:
-        return response["output"]
-    return str(response.final_output)
-
-
 JUDGE_INSTRUCTIONS = (
         "You are an expert prompt engineer and evaluator. "
         "Given a user input and a list of objects containing generated prompt and agent_name, your job is to critically assess the quality, clarity, and effectiveness of the prompt for accomplishing the user's task. "
@@ -140,19 +72,6 @@ def create_gemini_judging_agent(user_input, prompt):
     return gemini_agent, judging_input
 
 
-
-async def run_judging_agent(user_input, prompt):
-    """
-    Runs the judging agent with the provided judging input and returns the result.
-    """
-    agent, judging_input = create_gpt_judging_agent(user_input, prompt)
-    response = await Runner.run(agent, str(judging_input))
-    # If the response is a dict or object, extract the text; otherwise, return as is.
-    if isinstance(response, dict) and "output" in response:
-        return response["output"]
-    return str(response.final_output)
-
-
 def get_all_judging_agents_as_tools(user_input, prompt):
     """
     Returns a list of judging agents (e.g., GPT and Gemini judging agents) as tools, similar to get_all_prompt_agents_as_tools.
@@ -174,12 +93,6 @@ def create_judging_agent_with_tools(user_input, prompt, instructions=None):
     Returns the new meta-judging agent.
     """
     if instructions is None:
-        # instructions = (
-        #     "You are a meta-judging agent. Given a user input and a list of prompts, you can call judging agents as tools to evaluate each prompt. "
-        #     "Aggregate their ratings and explanations, and provide a summary or consensus judgement. "
-        #     "Return your answer as a JSON object with keys: 'user_input', 'prompt_list', 'judgements' (list of objects with agent name, rating, and explanation), and 'consensus' (your overall assessment)."
-        # )
-
         instructions = "you are a supreme judging agent who looks at the judgement from other agents supplied as tool to judge the prompt. \
                     you must Aggregate their ratings and explanations, and provide a summary or consensus judgement. \
                     you have to defintely choose the best prompt based on the judgements from other agents. \
@@ -216,22 +129,4 @@ async def judge_prompts(user_input, prompt_list):
     return str(response)
 
 
-if __name__ == "__main__":
-    load_dotenv(override=True)
-
-    # Ask for user input
-    user_task = input("Enter your task description: ")
-
-    gpt_result = asyncio.run(generate_prompt(user_task))
-    #print("\n--- Judge Agent 1 (GPT) Evaluation ---\n", gpt_result)
-
-    #judge_result = asyncio.run(run_judging_agent(user_task, gpt_result))
-    #print("\n--- Judge Agent 1 (GPT) Evaluation ---\n", judge_result)
-
-    judge_result = asyncio.run(judge_prompts(user_task, gpt_result))
-    print("\n--- Final Evaluation ---\n", judge_result)
-
-
-
-    
     

@@ -4,9 +4,9 @@ from agents import Agent, Runner, trace, function_tool, OpenAIChatCompletionsMod
 import os
 import asyncio
 from openai import AsyncOpenAI
+from pydantic import BaseModel
 
-
-DEFAULT_INSTRUCTIONS = (
+PROMPT_GENERATION_INSTRUCTIONS = (
     "You are an expert prompt engineer. Your task is to generate a highly effective, clear, and actionable prompt for a large language model (LLM) to accomplish a given user task."
     "\n\nBest practices for prompt generation:"
     "\n- Be specific and unambiguous about the task."
@@ -19,13 +19,27 @@ DEFAULT_INSTRUCTIONS = (
     "\n\nGiven a user task, generate a single, expert-level prompt that will maximize the quality and relevance of the LLM's response."
 )
 
+GENERATION_MANAGER_INSTRUCTIONS = (
+    "You are a prompt generation expert. \
+     Given a user input and three prompts generatar tools, your job is to call the tools with user input to get the prompt  \
+     Return your answer as a JSON object with keys: 'user_input' (input provided by user), 'prompts' (list of objects with each object having agent name and its generated prompt)."
+)
+
+
+class PromptAgentOutput(BaseModel):
+    agent_name: str
+    generated_prompt: str
+
+class CallingAgentOutput(BaseModel):
+    prompts: list[PromptAgentOutput]
+
 
 def get_anthropic_sonnet_agent(anthropic_base_url, api_key=None, model="anthropic/claude-3-sonnet", instructions=None):
     """
     Returns an OpenAI Agents SDK Agent configured to use the Anthropic Sonnet model with detailed prompt engineering instructions.
     """
     if instructions is None:
-        instructions = DEFAULT_INSTRUCTIONS
+        instructions = PROMPT_GENERATION_INSTRUCTIONS
     
     anthropic_client = AsyncOpenAI(base_url=anthropic_base_url, api_key=api_key)
     anthropic_model = OpenAIChatCompletionsModel(model=model, openai_client=anthropic_client)
@@ -39,7 +53,7 @@ def get_gpt_agent(api_key=None, model="gpt-3.5-turbo", instructions=None):
     Returns an OpenAI Agents SDK Agent configured to use a GPT model with detailed prompt engineering instructions.
     """
     if instructions is None:
-        instructions = DEFAULT_INSTRUCTIONS
+        instructions = PROMPT_GENERATION_INSTRUCTIONS
     
     return Agent(
         name="GPTPromptGeneratorAgent",
@@ -52,7 +66,7 @@ def get_gemini_agent(gemini_base_url, api_key=None, model="google/gemini-pro", i
     Returns an OpenAI Agents SDK Agent configured to use a Google Gemini LLM model with detailed prompt engineering instructions.
     """
     if instructions is None:
-        instructions = DEFAULT_INSTRUCTIONS
+        instructions = PROMPT_GENERATION_INSTRUCTIONS
     
     gemini_client = AsyncOpenAI(base_url=gemini_base_url, api_key=api_key)
     gemini_model = OpenAIChatCompletionsModel(model=model, openai_client=gemini_client)
@@ -115,21 +129,44 @@ async def generate_prompt(agent, user_task):
         return response["output"]
     return str(response)
 
+def get_all_prompt_agents_as_tools():
+    """
+    Returns the three prompt generator agents (gpt_agent, anthropic_agent, gemini_agent) using create_agents_from_env from prompt_generator_agent.py
+    """
+    gpt_agent, anthropic_agent, gemini_agent =  create_agents_from_env()
+    description = "generate prompt for user input"
+    # The tools are the three agents
+    tools = [
+        gpt_agent.as_tool(tool_name="gpt_agent", tool_description=description), 
+        anthropic_agent.as_tool(tool_name="anthropic_agent", tool_description=description),
+        gemini_agent.as_tool(tool_name="gemini_agent", tool_description=description)
+    ]
 
-# Example usage:
-if __name__ == "__main__":
-    # Only ask for user input
-    user_task = input("Enter your task description: ")
+    return tools
 
-    gpt_agent, anthropic_agent, gemini_agent = create_agents_from_env()
-    #gpt_agent = create_agents_from_env()
+def create_prompt_agent_with_tools():
+    """
+    Creates a GPT agent and uses the agents returned from get_all_prompt_agents as its tools.
+    Returns the new GPT agent.
+    """    
+
+    agent = Agent(
+        name="GPTAgentWithTools",
+        instructions=GENERATION_MANAGER_INSTRUCTIONS,
+        model=os.getenv("OPENAI_MODEL"),
+        tools=get_all_prompt_agents_as_tools(),
+        output_type=CallingAgentOutput,
+    )
+    return agent
 
 
-    # Generate prompts from all agents
-    gpt_prompt = asyncio.run(generate_prompt(gpt_agent, user_task))
-    anthropic_prompt = asyncio.run(generate_prompt(anthropic_agent, user_task))
-    gemini_prompt = asyncio.run(generate_prompt(gemini_agent, user_task))
-
-    print("\n--- GPT Prompt ---\n", gpt_prompt)
-    print("\n--- Anthropic Sonnet Prompt ---\n", anthropic_prompt)
-    print("\n--- Gemini Prompt ---\n", gemini_prompt) 
+async def generate_prompt(user_task):
+    """
+    Given a user task description, use the agent to generate a high-quality prompt for an LLM.
+    """
+    # The agent expects a message or input; we pass the user_task as the input.
+    response = await Runner.run(create_prompt_agent_with_tools(), user_task)
+    # If the response is a dict or object, extract the text; otherwise, return as is.
+    if isinstance(response, dict) and "output" in response:
+        return response["output"]
+    return str(response.final_output)
