@@ -1,0 +1,91 @@
+openapi: 3.0.2
+info:
+  title: DogStore API
+  description: API for managing dog store data
+  version: 1.0.0
+
+servers:
+  - url: /dogstore
+
+paths:
+  /dogs:
+    get:
+      summary: Get all dogs
+      responses:
+        '200':
+          description: List of dogs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Dog'
+    post:
+      summary: Create a new dog
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Dog'
+      responses:
+        '201':
+          description: Dog created successfully
+
+  /dogs/{id}:
+    get:
+      summary: Get a dog by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Dog details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dog'
+    put:
+      summary: Update a dog
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Dog'
+      responses:
+        '200':
+          description: Dog updated successfully
+
+    delete:
+      summary: Delete a dog
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Dog deleted successfully
+
+components:
+  schemas:
+    Dog:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        breed:
+          type: string
