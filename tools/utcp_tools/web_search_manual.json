@@ -1,0 +1,43 @@
+{
+  "version": "1.0",
+  "tools": [
+    {
+      "name": "web_search",
+      "description": "Search the internet.",
+      "tags": [
+        "search"
+      ],
+      "inputs": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Keywords or phrases to search for on internet using google. This should be a single string, not an array."
+          }      
+        },
+        "required": [
+          "query"
+        ]
+      },
+      "outputs": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "user query which was used to search the internet."
+          },
+          "results": {
+            "type": "string",
+            "description": "results of the search query."
+          }          
+        }
+      },
+      "tool_provider": {
+        "provider_type": "http",
+        "url": "http://127.0.0.1:8882/search/",
+        "http_method": "GET",
+        "content_type": "application/json"        
+      }
+    }    
+  ]
+}

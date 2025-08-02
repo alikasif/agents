@@ -216,6 +216,7 @@ dependencies = [
     "zstandard==0.23.0",
     "googletrans==4.0.2",
     "argparse==1.4.0",
+    "utcp>=0.1.8",
 ]
 
 [dependency-groups]

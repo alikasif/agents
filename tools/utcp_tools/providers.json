@@ -1,0 +1,7 @@
+[
+    {
+        "name": "searchapi",
+        "provider_type": "text",
+        "file_path": "./web_search_manual.json"
+    }    
+]
