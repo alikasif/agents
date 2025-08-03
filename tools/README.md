@@ -12,6 +12,8 @@ The project demonstrates the following tool integration approaches:
 - **Functions as Tools**: Converting custom Python functions into OpenAI-compatible tools, allowing the language model to execute specific code snippets.
 - **MCP (Message Control Protocol)**: Implementing the MCP protocol for tool management, enabling standardized communication between the language model and external tools.
 - **UTCP (Universal Tool Control Protocol)**: Employing UTCP for standardized tool interactions, providing a unified interface for accessing and utilizing various tools.
+[UTCP](https://github.com/universal-tool-calling-protocol)
+[UTCP Examples](https://github.com/universal-tool-calling-protocol/utcp-examples)
 
 ## Features
 
