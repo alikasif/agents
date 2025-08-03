@@ -1,13 +1,3 @@
-"""
-UTCP OpenAI Integration Example
-
-This example demonstrates how to:
-1. Initialize a UTCP client with tool providers from a config file
-2. For each user request, search for relevant tools.
-3. Instruct OpenAI to respond with a JSON for a tool call.
-4. Parse the JSON and execute the tool call using the UTCP client.
-5. Return the results to OpenAI for a final response.
-"""
 
 import asyncio
 import os
@@ -16,6 +6,7 @@ import sys
 import re
 from pathlib import Path
 from typing import Dict, Any, List
+from agents import FunctionTool
 
 import openai
 from dotenv import load_dotenv
@@ -24,6 +15,7 @@ from utcp.client.utcp_client import UtcpClient
 from utcp.client.utcp_client_config import UtcpClientConfig, UtcpDotEnv
 from utcp.shared.tool import Tool
 
+# https://github.com/universal-tool-calling-protocol/utcp-examples
 
 async def initialize_utcp_client() -> UtcpClient:
     """Initialize the UTCP client with configuration."""
@@ -39,143 +31,60 @@ async def initialize_utcp_client() -> UtcpClient:
     client = await UtcpClient.create(config)
     return client
 
-def format_tools_for_prompt(tools: List[Tool]):
-    """Convert UTCP tools to a JSON string for the prompt."""
-    tool_list = []
-    for tool in tools:
-        tool_list.append(tool.model_dump())
-    #return json.dumps(tool_list, indent=2)
-    return tool_list
 
-async def format_tools_for_openai(list_tools):
-    openai_tools = []
-    for tool in list_tools:
-        print(f"Tool: {str(tool)}")
-        schema = {**tool.inputs, "additionalProperties": False}
-        openai_tool = {
-            "type": "function",
-            "name": tool.name,
-            "description": tool.description,
-            "parameters": schema,    
-            "strict": True,        
-        }
-        openai_tools.append(openai_tool)
-    return openai_tools
+def sanitize_tool_name(name: str) -> str:
+    """
+    Sanitize tool name to match OpenAI's pattern requirement: ^[a-zA-Z0-9_-]+$
+    """
+    sanitized = re.sub(r'[^a-zA-Z0-9_-]', '_', name)
+    if not sanitized or not re.match(r'^[a-zA-Z0-9]', sanitized):
+        sanitized = 'tool_' + sanitized
+    return sanitized
 
 
-async def get_openai_response(messages: List[Dict[str, str]]) -> str:
-    """Get a response from OpenAI."""
-    client = openai.AsyncOpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
-    
-    response = await client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=messages,
-    )
-    
-    return response.choices[0].message.content
-
-async def main():
-    """Main function to demonstrate OpenAI with UTCP integration."""
-    load_dotenv(Path(__file__).parent / ".env")
-    
-    if not os.environ.get("OPENAI_API_KEY"):
-        print("Error: OPENAI_API_KEY not found in environment variables")
-        print("Please set it in the .env file")
-        sys.exit(1)
-    
-    print("Initializing UTCP client...")
+async def utcp_tool_to_open_ai_agent_tool(search_query: str) -> List[Tool]:
+    """
+    Creates a FunctionTool that wraps a UTCP tool,
+    making it compatible with the openai-agents library.
+    """
     utcp_client = await initialize_utcp_client()
-    print("UTCP client initialized successfully.")
+    async def utcp_tool_handler(ctx, args: str) -> str:
+        """
+        Handler function for the UTCP tool invocation.
+        """
+        print(f"\nCalling tool: {tool.name} with args: {args}")
+        try:
+            kwargs = json.loads(args) if args.strip() else {}
+            
+            result = await utcp_client.call_tool(tool.name, kwargs)
+            print(f"Tool {tool.name} executed successfully. Result: {result}")
+            
+            if isinstance(result, (dict, list)):
+                return json.dumps(result)
+            else:
+                return str(result)
+        except Exception as e:
+            print(f"Error calling tool {tool.name}: {e}")
+            return f"Error: {str(e)}"
 
-    conversation_history = []
-
-    while True:
-        user_prompt = input("\nEnter your prompt (or 'exit' to quit): ")
-        if user_prompt.lower() in ["exit", "quit"]:
-            break
-
-        print("\nSearching for relevant tools...")
-        relevant_tools = await utcp_client.search_tools(user_prompt, limit=10)
+    relevant_tools = await utcp_client.search_tools(search_query, limit=10)
+    tools=[]
+    for tool in relevant_tools:
+        params_schema = {"type": "object", "properties": {}, "required": [], "additionalProperties": False}
         
-        if relevant_tools:
-            print(f"Found {len(relevant_tools)} relevant tools.")
-            for tool in relevant_tools:
-                print(f"- {tool.name}")
-        else:
-            print("No relevant tools found.")
+        if tool.inputs and tool.inputs.properties:
+            for prop_name, prop_schema in tool.inputs.properties.items():
+                params_schema["properties"][prop_name] = prop_schema
+            
+            if tool.inputs.required:
+                params_schema["required"] = tool.inputs.required
 
-        tools_json_string = format_tools_for_prompt(relevant_tools)
+        sanitized_name = sanitize_tool_name(tool.name)
+        tools.append(FunctionTool(
+            name=sanitized_name,
+            description=tool.description or f"No description available for {tool.name}.",
+            params_json_schema=params_schema,
+            on_invoke_tool=utcp_tool_handler,
+        ))
+    return tools
 
-        system_prompt = (
-            "You are a helpful assistant. When you need to use a tool, you MUST respond with a JSON object "
-            "with 'tool_name' and 'arguments' keys. Do not add any other text. The arguments must be a JSON object."
-            "For example: {\"tool_name\": \"some_tool.name\", \"arguments\": {\"arg1\": \"value1\"}}. "
-            f"Here are the available tools:\n{tools_json_string}"
-        )
-        
-        messages = [
-            {"role": "system", "content": system_prompt},
-        ]
-        if conversation_history:
-            messages.extend(conversation_history)
-        messages.append({"role": "user", "content": user_prompt})
-
-        print("\nSending request to OpenAI...")
-        assistant_response = await get_openai_response(messages)
-
-        json_match = re.search(r'```json\n({.*?})\n```', assistant_response, re.DOTALL)
-        if not json_match:
-            json_match = re.search(r'({.*})', assistant_response, re.DOTALL)
-
-        if json_match:
-            json_string = json_match.group(1)
-            try:
-                tool_call_data = json.loads(json_string)
-                if "tool_name" in tool_call_data and "arguments" in tool_call_data:
-                    tool_name = tool_call_data["tool_name"]
-                    arguments = tool_call_data["arguments"]
-                    
-                    print(f"\nExecuting tool call: {tool_name}")
-                    print(f"Arguments: {json.dumps(arguments, indent=2)}")
-
-                    try:
-                        result = await utcp_client.call_tool(tool_name, arguments)
-                        print(f"Result: {result}")
-                        tool_output = str(result)
-                    except Exception as e:
-                        error_message = f"Error calling {tool_name}: {str(e)}"
-                        print(f"Error: {error_message}")
-                        tool_output = error_message
-
-                    # Add user prompt and assistant's response to history
-                    conversation_history.append({"role": "user", "content": user_prompt})
-                    conversation_history.append({"role": "assistant", "content": assistant_response})
-
-                    print("\nSending tool results to OpenAI for interpretation...")
-                    
-                    # Create a new list of messages for the follow-up, adding the tool output as a new user message
-                    follow_up_messages = [
-                        {"role": "system", "content": system_prompt},
-                        *conversation_history,
-                        # Provide the tool's output as a new user message for the model to process
-                        {"role": "user", "content": f"Tool output: {tool_output}\n Please use the tool output to answer the users request."}
-                    ]
-
-                    final_response = await get_openai_response(follow_up_messages)
-                    print(f"\nAssistant's interpretation: {final_response}")
-                    conversation_history.append({"role": "assistant", "content": final_response})
-                else:
-                    print(f"\nAssistant: {assistant_response}")
-                    conversation_history.append({"role": "user", "content": user_prompt})
-                    conversation_history.append({"role": "assistant", "content": assistant_response})
-            except json.JSONDecodeError:
-                print(f"\nAssistant: {assistant_response}")
-                conversation_history.append({"role": "user", "content": user_prompt})
-                conversation_history.append({"role": "assistant", "content": assistant_response})
-        else:
-            print(f"\nAssistant: {assistant_response}")
-            conversation_history.append({"role": "user", "content": user_prompt})
-            conversation_history.append({"role": "assistant", "content": assistant_response})
-
-if __name__ == "__main__":
-    asyncio.run(main())

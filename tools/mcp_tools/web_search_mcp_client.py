@@ -4,7 +4,7 @@ from mcp import StdioServerParameters
 from agents import FunctionTool
 import json
 
-params = StdioServerParameters(command="uv", args=["run", "tools/web_search_mcp_server.py"], env=None)
+params = StdioServerParameters(command="uv", args=["run", "tools/mcp_tools/web_search_mcp_server.py"], env=None)
 
 
 async def list_tools():
@@ -23,7 +23,7 @@ async def call_tool(tool_name, tool_args):
             return result
             
 
-async def get_tools_openai():
+async def get_agent_tools_openai():
     openai_tools = []
     for tool in await list_tools():
         schema = {**tool.inputSchema, "additionalProperties": False}

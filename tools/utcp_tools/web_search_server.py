@@ -20,6 +20,8 @@ class SearchResponse(BaseModel):
 @app.get("/search/", response_model=SearchResponse)
 async def search_web(query: str):
     try:
+        print(f"Received search query: {query}")
+        
         # Initialize the Serper API wrapper
         search = GoogleSerperAPIWrapper()
         
