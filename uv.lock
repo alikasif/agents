@@ -364,7 +364,7 @@ requires-dist = [
     { name = "pillow", specifier = "==11.2.1" },
     { name = "playwright", specifier = "==1.52.0" },
     { name = "plotly", specifier = "==6.1.2" },
-    { name = "polygon-api-client", specifier = "==1.14.6" },
+    { name = "polygon-api-client", specifier = "==1.15.3" },
     { name = "prance", specifier = "==25.4.8.0" },
     { name = "prompt-toolkit", specifier = "==3.0.51" },
     { name = "propcache", specifier = "==0.3.2" },
@@ -2865,16 +2865,16 @@ wheels = [
 
 [[package]]
 name = "polygon-api-client"
-version = "1.14.6"
+version = "1.15.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "certifi" },
     { name = "urllib3" },
     { name = "websockets" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/3d/ba/9a20534f09c029127b2fe8dafc25e2765a605bba22b20b471b0e5ae569e4/polygon_api_client-1.14.6.tar.gz", hash = "sha256:6ed518a43db05de544b5a86b8d1aed8ab390df0c59b8e49f656b6a638ce3c1ce", size = 30957, upload-time = "2025-06-03T18:37:24.506Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/0f/87/da00179018cbbe5201e835b1b08b1006bccbac23d29c07db77fd93832447/polygon_api_client-1.15.3.tar.gz", hash = "sha256:6f802bf845cce6004fc2f7921b6fe2e7941caf6539216033415cbea2194f8a48", size = 37976, upload-time = "2025-07-17T15:55:27.344Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/6b/42/afb74666ee99195a7a0a18cd51dcc834f35078b857133b1e2155431ad305/polygon_api_client-1.14.6-py3-none-any.whl", hash = "sha256:7f29d028f712da3a31ca1283a47e4ccd6f145bd355f35f33f638d8675f9d22a9", size = 44201, upload-time = "2025-06-03T18:37:23.182Z" },
+    { url = "https://files.pythonhosted.org/packages/d5/b2/4a51232a3017dce2a74cd3e9bda16d118a95cc20e7c75969710ca9839dc0/polygon_api_client-1.15.3-py3-none-any.whl", hash = "sha256:a6a3b36cfb4a021c4fd89d782e5950d2e6b20554afb463c1217f3cc138c0d2d3", size = 54553, upload-time = "2025-07-17T15:55:25.958Z" },
 ]
 
 [[package]]

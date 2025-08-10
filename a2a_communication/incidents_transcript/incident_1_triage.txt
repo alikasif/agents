@@ -1,0 +1,77 @@
+### Incident Summary Report
+
+**Incident Title:** Checkout-Service Errors Spike Due to Incorrect Payment Gateway Config Post-Deployment
+
+**Incident Start Time:** 09:10 AM (deployment time)
+**Incident Reported:** 09:14 AM by Priya via PagerDuty alerts and chat
+**Incident Resolution Time:** 09:23 AM
+**Total Duration:** 13 minutes
+
+---
+
+### What Went Wrong:
+- A deployment at 09:10 AM introduced a change in how payment gateway URLs are handled.
+- The production environment variables for payment gateway endpoints were not updated to reflect the new config format.
+- This caused the checkout-service to point to a non-existent payment gateway endpoint, resulting in ConnectionRefusedError and 500 errors.
+
+---
+
+### How and When It Was Reported:
+- At 09:14 AM, Priya received PagerDuty alerts indicating a spike in checkout-service errors (45% error rate).
+- Ravi confirmed increased latency and payment API errors via monitoring dashboards.
+- The issue was discussed and diagnosed in the team chat immediately after.
+
+---
+
+### Who Reported It:
+- Priya (PagerDuty alerts and monitoring)
+- Ravi (logs and metrics analysis)
+
+---
+
+### Time to Triage:
+- Within 1-2 minutes after initial alert (09:14-09:16), the team identified the root cause as a bad config in production.
+
+---
+
+### Blast Radius:
+- Impacted service: checkout-service only.
+- Other services (catalog-service, user-service) unaffected.
+- Customer impact: Checkout failures and increased latency, communicated to customer support.
+
+---
+
+### Mitigation Steps:
+- Immediate rollback to the stable 9:00 AM build initiated by Ravi at 09:18 AM.
+- Customer support notified to inform users of temporary checkout issues.
+- Alex prepared a fix for the config issue in staging.
+
+---
+
+### Verification and Resolution:
+- Rollback completed by 09:21 AM, error rates dropped from 45% to below 3%.
+- Latency returned to normal levels.
+- Fix for production env vars tested in staging.
+- Decision to hold off on redeployment until sanity checks and load tests are completed.
+
+---
+
+### Post-Incident Action Items:
+1. Add environment variable validation in CI/CD pipeline (Owner: Alex)
+2. Implement payment gateway health check pre-deployment (Owner: Ravi)
+3. Update runbook to include config verification steps before merging (Owner: Priya)
+4. Make staging load tests mandatory before production deployment (Owner: Alex)
+
+---
+
+### Additional Notes:
+- Incident resolved in 13 minutes due to quick diagnosis and rollback.
+- Emphasis on never assuming prod configs match staging.
+- Team praised for effective communication and collaboration under pressure.
+
+---
+
+**Incident Commander:** Sara
+**Incident Team:** Priya, Ravi, Alex, Sara
+
+---

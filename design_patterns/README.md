@@ -11,6 +11,7 @@ This folder demonstrates various design patterns commonly used in AI and agentic
 ## Example Patterns
 
 **Reflection:** The AI evaluates and refines its own output iteratively, improving accuracy. For example, in code generation, it might review and rewrite code for better correctness and style.
+
 **Tool Use:** The AI interacts with external tools like databases or web searches to perform tasks requiring real-world data. An example is using a web search tool for research.
 
 **Planning:** The AI breaks down complex tasks into steps and plans their execution, such as outlining a report before writing it.

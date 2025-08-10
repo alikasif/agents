@@ -1,0 +1,94 @@
+
+[09:14] Priya
+Heads up — just got PagerDuty alerts for checkout-service errors spiking to 45% after the 9:10 AM deployment. Seeing a flood of 500s in production.
+
+[09:14] Ravi
+Yup, graphs show checkout latency jumped from ~120ms to over 1.5s instantly. Payment API error rates are climbing too.
+
+[09:15] Alex
+That would be my deployment… I pushed a change to how we handle payment gateway URLs. Let me pull logs from the pod.
+
+[09:15] Sara
+Ok, let’s confirm if it’s the latest code or infra. Priya, can you check if any other services are affected?
+
+[09:16] Priya
+Only checkout-service is impacted. catalog-service and user-service are fine. Looks isolated.
+
+[09:16] Ravi
+Logs are showing ConnectionRefusedError: could not connect to payment-gateway.internal. Looks like the URL’s wrong.
+
+[09:17] Alex
+Ah… I know what happened. We moved payment configs to a new env var in staging last week. I merged that into prod without updating the prod env var values. So the service is literally pointing to a non-existent endpoint.
+
+[09:17] Priya
+So it’s a bad config in prod. Can we hotfix quickly? Or should we roll back?
+
+[09:18] Ravi
+Rollback is fastest. We’ll be down for less time. I’m starting rollback to the 9:00 AM stable build now.
+
+[09:18] Sara
+Do it. Alex, please fix config in staging while Ravi rolls back. Priya, keep an eye on error rates and customer impact.
+
+[09:19] Priya
+Monitoring dashboards. Error rates holding steady at ~45%, still bad. Rollback can’t finish soon enough.
+
+[09:19] Ravi
+Rollback halfway done. ETA 90 seconds.
+
+[09:20] Sara
+Also, someone update #customer-support so they know to tell users “We’re having temporary checkout issues, please try again shortly.”
+
+[09:20] Priya
+On it. Support team notified.
+
+[09:21] Ravi
+Rollback complete. Traffic shifting back to stable version now. Error rates dropping — down to 15%, and falling fast.
+
+[09:21] Alex
+Fix ready for staging. Updated prod env vars with correct payment gateway endpoint. Running automated tests now.
+
+[09:22] Priya
+Error rates now below 3%. Looks like we’re recovered. Latency back to normal too.
+
+[09:22] Sara
+Good. Let’s hold off on redeploy until we’ve done a quick sanity check on staging. No more surprises today.
+
+[09:23] Alex
+Agreed. I’ll run load tests on staging before pushing. Also adding a check in the deploy script to fail if required env vars are missing.
+
+[09:23] Ravi
+We should add a pre-prod health check that pings the payment gateway sandbox before deployment completes.
+
+[09:24] Priya
+And maybe update the runbook — right now it doesn’t even mention validating external service configs before merging.
+
+[09:24] Sara
+Yes. Action items for postmortem:
+ Add env var validation in CI/CD
+ Payment gateway health check pre-deploy
+ Update runbook to include config verification
+ Add staging load test as mandatory before prod
+
+[09:25] Alex
+I’ll own #1 and #4. Ravi can you handle #2?
+
+[09:25] Ravi
+Sure thing. Priya, maybe you can update the runbook?
+
+[09:25] Priya
+Yep, I’ll take care of that.
+
+[09:26] Sara
+Also, Alex — thank you for owning up quickly. This could have been much worse without fast diagnosis.
+
+[09:26] Alex
+Appreciate it. Lesson learned: never assume prod configs match staging.
+
+[09:27] Ravi
+Or as I like to call it: “Prod is where assumptions go to die.”
+
+[09:27] Priya
+Adding that as the title of the postmortem doc.
+
+[09:27] Sara
+Alright folks, incident officially resolved in 13 minutes. Great teamwork under pressure. Let’s make sure this one doesn’t repeat.

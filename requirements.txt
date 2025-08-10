@@ -399,7 +399,7 @@ playwright==1.52.0
     # via agents (pyproject.toml)
 plotly==6.1.2
     # via agents (pyproject.toml)
-polygon-api-client==1.14.6
+#polygon-api-client>=1.15.3
     # via agents (pyproject.toml)
 prance==25.4.8.0
     # via semantic-kernel
@@ -667,7 +667,7 @@ wcwidth==0.2.13
     # via prompt-toolkit
 webencodings==0.5.1
     # via html5lib
-websockets==14.2
+websockets==15.0.1
     # via
     #   gradio-client
     #   polygon-api-client
@@ -693,3 +693,5 @@ GitPython==3.1.44
 googletrans==4.0.2
 argparse==1.4.0
 utcp==0.1.8
+google-adk==1.10.0
+python-a2a==0.5.9
