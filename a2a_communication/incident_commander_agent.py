@@ -1,6 +1,5 @@
 "This file containes the Incident commander Agent built using Google ADK which is responsible for managing incident response and coordination."
 
-from agents import ModelSettings
 from google.adk.agents import LlmAgent
 from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
@@ -10,7 +9,6 @@ from python_a2a import A2AClient, Message, TextContent, MessageRole
 from dotenv import load_dotenv
 import os
 import asyncio
-from google.adk.tools.tool_context import ToolContext
 
 
 class IncidentCommanderAgent(A2AServer):

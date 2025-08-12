@@ -3,7 +3,7 @@ from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
 from google.genai import types
 from python_a2a import A2AServer, Message, TextContent, MessageRole, run_server
-from python_a2a import A2AClient, Message, TextContent, MessageRole
+from python_a2a import Message, TextContent, MessageRole
 from dotenv import load_dotenv
 import os
 import asyncio

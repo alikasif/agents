@@ -1,7 +1,7 @@
-from agents import Agent, ModelSettings, function_tool
+from agents import Agent, ModelSettings
 from agents import Agent, Runner
 from python_a2a import A2AServer, Message, TextContent, MessageRole, run_server
-from python_a2a import A2AClient, Message, TextContent, MessageRole
+from python_a2a import Message, TextContent, MessageRole
 from dotenv import load_dotenv
 import os
 import asyncio

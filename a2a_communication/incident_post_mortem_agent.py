@@ -5,7 +5,7 @@ from autogen_core import CancellationToken
 from autogen_ext.models.openai import OpenAIChatCompletionClient
 from autogen_agentchat.messages import TextMessage
 from python_a2a import A2AServer, Message, TextContent, MessageRole, run_server
-from python_a2a import A2AClient, Message, TextContent, MessageRole
+from python_a2a import Message, TextContent, MessageRole
 import asyncio
 from dotenv import load_dotenv
 import os
