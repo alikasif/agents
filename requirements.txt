@@ -695,3 +695,4 @@ argparse==1.4.0
 utcp==0.1.8
 google-adk==1.10.0
 python-a2a==0.5.9
+google-genai==1.29.0

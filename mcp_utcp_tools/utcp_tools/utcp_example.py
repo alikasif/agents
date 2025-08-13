@@ -48,6 +48,7 @@ async def utcp_tool_to_open_ai_agent_tool(search_query: str) -> List[Tool]:
     making it compatible with the openai-agents library.
     """
     utcp_client = await initialize_utcp_client()
+    
     async def utcp_tool_handler(ctx, args: str) -> str:
         """
         Handler function for the UTCP tool invocation.
@@ -66,6 +67,7 @@ async def utcp_tool_to_open_ai_agent_tool(search_query: str) -> List[Tool]:
         except Exception as e:
             print(f"Error calling tool {tool.name}: {e}")
             return f"Error: {str(e)}"
+
 
     relevant_tools = await utcp_client.search_tools(search_query, limit=10)
     tools=[]
