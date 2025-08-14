@@ -32,6 +32,8 @@ def get_tools(user_input):
 
 def llm_utcp(user_input):
 
+    print(get_tools(user_input))
+
     client = genai.Client(api_key=os.getenv('GEMINI_API_KEY'))
     
     response = client.models.generate_content(

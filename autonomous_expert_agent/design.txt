@@ -1,0 +1,12 @@
+
+we need a solid system prompt to make expert agent behave like an expert.
+
+it must use planning agent to breakdown the job into multiple sub tasks.
+
+it must then execute the tasks using other sub agents and keep track of whats pending, in-progress and complete.
+
+It must be able to create a compensating task for anything which failed.
+
+It must use file system tools to list down the tasks, update status against each and save the output from each sub agent
+
+
