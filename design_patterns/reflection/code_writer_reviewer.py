@@ -75,6 +75,7 @@ def write_and_review(user_input: str):
    # print(f"Initial Response:\n{initial_response.code}\n")
     current_response = initial_response.code
     reflection=""
+    
     while i < 5:
         print(f"\n\n--- Reflection Iteration {i+1} ---")
         reflection = review_code(llm).invoke({"initial_response":current_response, "query":user_input})
@@ -85,9 +86,11 @@ def write_and_review(user_input: str):
             break
 
         refined_response = refinement(llm).invoke(
-            {"initial_response":current_response,
+            {
+            "query":user_input,
+            "initial_response":current_response,
             "reflection":reflection,
-            "query":user_input}
+            }
         )
 #        print(f"Refined Response:\n{refined_response.improved_code}\n")
         current_response = refined_response.improved_code
