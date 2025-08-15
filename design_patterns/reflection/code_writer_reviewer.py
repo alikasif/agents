@@ -1,52 +1,66 @@
-from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
-from typing import List
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 import os
 from dotenv import load_dotenv
-from langchain.chains import LLMChain
 from langchain_core.prompts import PromptTemplate
+from pydantic import BaseModel
 
+    
+class Code(BaseModel):
+    code: str 
 
 def write_code(llm):
-   
+    
     prompt = PromptTemplate(
     
+        template="Write best possible python code for {query}. Dont include any test run example. " \
+        "Your response must contain only the code to solve the user query." ,   
         input_variables=["query"],
-        #  this needs to be a tuple so do not forget the , at the end and do not include any , in-between
-        template="Write best possible code for {query}",
+
     )
 
-    generator = LLMChain(llm=llm, prompt=prompt)
+    structured_llm = llm.with_structured_output(Code)
+
+    generator = prompt|structured_llm
    
     return generator
 
+
+class CodeReview(BaseModel):
+    review_comments: str
 
 def review_code(llm):
 
     reflection_prompt = PromptTemplate(
     input_variables=["initial_response", "query"],
     template=
-            "You are a senior lead python code reviewer. You will review following code {initial_response} for the query {query}."
-            "Provide detailed code reviw focused on improving the code quality, performance, modularity, testability, and readability"
-            "to an asistant code writer to help improve this code."
+            "You are a senior lead python code reviewer. You will review following code: {initial_response} for the query: {query}."
+            "Provide detailed code reviw focused on improving the code quality, performance, modularity, testability, and readability."
+            "Do not add review comments for adding unit test but do add review comments for testability of code."
+            "Review comments must include only the improvements required."
             "if no more improvement are required then Respond with PAUSE and only PAUSE without any review comments."
             "Respond with code review comments only. Dont include the improved code in your response."
     )
+    structured_llm = llm.with_structured_output(CodeReview)
 
-    reflector = LLMChain(llm=llm, prompt=reflection_prompt)
+    reflector = reflection_prompt | structured_llm
 
     return reflector
+
+
+class RefinedResponse(BaseModel):
+    improved_code: str
 
 def refinement(llm):
     refinement_prompt = PromptTemplate(
     input_variables=["initial_response", "reflection", "query"],
     template="Given the initial response to '{query}':\n\n{initial_response}\n\n"
              "And the following critique and recommendations:\n\n{reflection}\n\n"
-             "Produce a refined and improved version of the response."
+             "Produce a refined and improved version of the python code. Respond with only the code."
     )
 
-    refinement_chain = LLMChain(llm=llm, prompt=refinement_prompt)
+    structured_llm = llm.with_structured_output(RefinedResponse)
+
+    refinement_chain = refinement_prompt | structured_llm
 
     return refinement_chain
 
@@ -55,15 +69,17 @@ def refinement(llm):
 def write_and_review(user_input: str):
     
     i=0
-    llm = ChatOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+    llm = ChatOpenAI(api_key=os.getenv("OPENAI_API_KEY"), model=os.getenv("OPENAI_MODEL"),)
 
     initial_response = write_code(llm).invoke(user_input)
-    current_response = initial_response
+   # print(f"Initial Response:\n{initial_response.code}\n")
+    current_response = initial_response.code
     reflection=""
-    while i < 3:
+    while i < 5:
         print(f"\n\n--- Reflection Iteration {i+1} ---")
         reflection = review_code(llm).invoke({"initial_response":current_response, "query":user_input})
-        print(f"Reflection:\n{reflection}\n")
+        reflection = reflection.review_comments
+ #       print(f"Reflection:\n{reflection.review_comments}\n")
 
         if 'PAUSE' == reflection:
             break
@@ -73,8 +89,8 @@ def write_and_review(user_input: str):
             "reflection":reflection,
             "query":user_input}
         )
-        print(f"Refined Response:\n{refined_response}\n")
-        current_response = refined_response
+#        print(f"Refined Response:\n{refined_response.improved_code}\n")
+        current_response = refined_response.improved_code
         i+=1
     
     print("\n\n\n")
