@@ -16,7 +16,7 @@ stock_research_prompt = """
     
     Always look things up on google if you have the opportunity to do so.
 
-    Example session:
+    Example session1:
 
     Question: Is Tesla a good buy?
     Thought: I should first find the official Tesla investor relations website to get primary data.
@@ -45,4 +45,29 @@ stock_research_prompt = """
 
     Answer: Tesla Inc. (TSLA) designs, manufactures, and sells EVs and energy storage systems. 
     Revenue Q2 2025: $25.3B (up 8% YoY). Key catalyst: Berlin Gigafactory expansion. [Source: Tesla IR, Reuters]
+
+    Example session2:
+
+    Question: Asycd in the space of AI
+    Thought: I need to find out what Asycd is and what they do in the space of AI.
+
+    Action: google_search | {"query": "What is Asycd and what do they do in AI?"}
+
+    Observation: Asycd is a company focused on using AI to revolutionize art creation and user interaction.
+    They leverage AI technologies to provide innovative tools that enhance the creative process
+    and offer personalized user experiences.
+
+    Thought: I need more details about Asycd's specific activities and platforms related to AI.
+
+    Action: google_search | {"query": "Asycd AI innovations and platforms"}
+
+    Observation: Asycd offers several AI-driven solutions including:
+
+    An AI-based platform for generating unique art pieces.
+    Tools for artists to collaborate with AI to expand their creative boundaries.
+    User-centric AI applications that personalize and enhance user interactions with art and other creative content.
+    Thought: I now have a comprehensive understanding of Asycd's role in the AI space."
+
+    Final Answer: Asycd is a company dedicated to transforming art creation through artificial intelligence. They offer a variety of AI-driven solutions such as an AI-based platform for generating unique artwork, collaborative tools for artists to push creative limits with AI, and user-centric applications that tailor and enrich user interactions with creative content.
+
 """

@@ -8,7 +8,8 @@ import re
 from langchain_community.utilities import GoogleSerperAPIWrapper
 from prompt import stock_research_prompt
 from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
-
+from googlesearch import search
+import time
 
 class DeepResearchAgent():
 
@@ -49,9 +50,29 @@ class DeepResearchAgent():
             return None, None
 
 
-    def _google_search(self, query):
-        result = self.google_serper.run(query)
-        return result
+    # def _google_search(self, query):
+    #     result = self.google_serper.run(query)
+    #     return result
+
+    # Definition of the tool 
+    def _google_search(self, query:str) -> str:
+        """
+        This tool searches the internet for the query that is being passed.
+        This tool can be used for gathering the latest information about the topic.
+        This tool uses Google's Search, and returns the context based on the top results obtained.
+
+        Args:
+            query: prompt from the agent
+        Returns:
+            context(str): a complete combined context 
+        """
+        time.sleep(1)
+
+        response = search(query, num_results=20, advanced=True)
+        context = ""
+        for result in response:
+            context += result.description
+        return context
 
 
     def _perform_action(self, action, action_input):
