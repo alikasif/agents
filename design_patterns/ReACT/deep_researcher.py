@@ -6,7 +6,7 @@ from langchain_core.prompts import PromptTemplate
 from pydantic import BaseModel
 import re
 from langchain_community.utilities import GoogleSerperAPIWrapper
-from prompt import stock_research_prompt
+from prompt import react_prompt
 from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
 from googlesearch import search
 import time
@@ -43,7 +43,7 @@ class DeepResearchAgent():
             if action not in self.available_actions:
                 raise Exception("Unknown action: {}: {}".format(action, action_input))
             
-            print("\n\n-- running {} {}".format(action, action_input))
+            #print("\n\n-- running {} {}".format(action, action_input))
             action = self.available_actions[action]
             return action, action_input
         else:
@@ -77,7 +77,7 @@ class DeepResearchAgent():
 
     def _perform_action(self, action, action_input):
         observation = action(action_input)
-        print("\n\nObservation:", observation)
+        #print("\n\nObservation:", observation)
         next_prompt = "Observation: {}".format(observation)
         return next_prompt
 
@@ -88,12 +88,12 @@ class DeepResearchAgent():
         response=""
         while i < 5:
             response = self._thought(next_prompt)
-            print(f"\n\nthought:: {response}")
+            #print(f"\n\nthought:: {response}")
             action, action_input = self._parse_result_for_actions(result=response)
             if action:
                 print(f"\n\naction = {action} action_input = {action_input}")
                 next_prompt = self._perform_action(action=action, action_input=action_input)
-                print(f"\n\nnext prompt {next_prompt}")
+                #print(f"\n\nnext prompt {next_prompt}")
             else:
                 print(f"*** NO ACTION FOUND!!")
             i+=1
@@ -104,7 +104,7 @@ if __name__ == '__main__':
 
     load_dotenv(override=True)
     user_input = input("Enter your research query: ")
-    agent = DeepResearchAgent(stock_research_prompt)
+    agent = DeepResearchAgent(react_prompt)
     response = agent.run(user_input=user_input)
     print(f"\n\n final response: \n\n {response}")
 
