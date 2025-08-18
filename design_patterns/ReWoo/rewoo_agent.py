@@ -15,14 +15,14 @@ class PlanStep(TypedDict):
     plan: str
     step: str
 
-class StepResult(TypedDict):
-    stepId: str
-    result: str
-
 class ReWOO(TypedDict):
     task: str
     steps: List[PlanStep]    
     finalResult: str
+
+class StepResult(TypedDict):
+    stepId: str
+    result: str
 
 
 class ReWooAgent:
@@ -51,79 +51,10 @@ class ReWooAgent:
 
         response = self.planner.invoke(self.messages)
         
-        #print(f"\n\nthought response content :: {response.content}\n\n")
+        #print(f"\n\nthought response content :: {response["steps"]}\n\n")
         #self.messages.append(AIMessage(content= response))
         return response
     
-    
-    def _get_current_task(self, state: ReWOO):
-        if "results" not in state or state["results"] is None:
-            return 1
-        if len(state["results"]) == len(state["steps"]):
-            return None
-        else:
-            return len(state["results"]) + 1
-        
-
-    def _execute(self, state:ReWOO):
-        
-        pattern = r"#(\w+)\s*=\s*(\w+)\[(.*)\]"
-        step_results = {}
-        i=0
-        
-        for plan_step in state["steps"]:
-            print(str(plan_step)+"\n")
-
-            step = plan_step["step"]
-            matches = re.match(pattern, step)
-            task_id, tool, tool_input = matches.groups()
-            
-            if i > 0:                
-                for step_id, step_result in step_results.items():
-                    prev_result = step_result["result"]
-                    tool_input.replace(step_id, prev_result)
-            
-            result = self._perform_action(tool, tool_input)
-            step_result = StepResult(stepId=task_id, result=result)
-            step_results[task_id] = step_result
-            i+=1
-            print(f"\n\n {step_result}\n\n")
-
-        return step_result
-        
-
-
-    def _solve(self, state: ReWOO):
-        plan = ""
-        for _plan, step_name, tool, tool_input in state["steps"]:
-            _results = (state["results"] or {}) if "results" in state else {}
-            for k, v in _results.items():
-                tool_input = tool_input.replace(k, v)
-                step_name = step_name.replace(k, v)
-            plan += f"Plan: {_plan}\n{step_name} = {tool}[{tool_input}]"
-        prompt = solve_prompt.format(plan=plan, task=state["task"])
-        result = self.llm.invoke(prompt)
-        return {"result": result.content}
-
-
-    def _parse_result_for_actions(self, result: ReWOO):
-
-        matches = re.findall(self.regex_pattern, result)
-        return {"steps": matches, "plan_string": result}
-
-        actions = [self.action_re.match(a) for a in result.split('\n') if self.action_re.match(a)]
-        if actions:
-            action, action_input = actions[0].groups()
-            
-            if action not in self.available_actions:
-                raise Exception("Unknown action: {}: {}".format(action, action_input))
-            
-            #print("\n\n-- running {} {}".format(action, action_input))
-            action = self.available_actions[action]
-            return action, action_input
-        else:
-            return None, None
-
 
     # Definition of the tool 
     def _google_search(self, query:str) -> str:
@@ -145,18 +76,68 @@ class ReWooAgent:
             context += result.description
         return context
 
-
     def _perform_action(self, tool, tool_input):
-
+        print(f"\n\n tool: {tool} tool_input: {tool_input}")
         result=""
         if tool == "Google":
             result = self._google_search(tool_input)
         elif tool == "LLM":
-            result = self.llm.invoke(tool_input)
+            result = self.llm.invoke(tool_input).content
         else:
             raise ValueError
 
         return result
+
+
+    def _execute(self, state: ReWOO):
+        
+        pattern = r"#(\w+)\s*=\s*(\w+)\[(.*)\]"
+        step_results_dict = {}
+        i=0
+        
+        for plan_step in state["steps"]:
+            
+            step = plan_step["step"]
+            print(f"\nstep: {step}\n")
+            matches = re.match(pattern, step)
+            task_id, tool, tool_input = matches.groups()
+
+            # replace place holders from previous steps result            
+            for step_id, step_result in step_results_dict.items():      
+                tool_input = tool_input.replace(step_id, step_result)
+            
+            result = self._perform_action(tool, tool_input)       
+            step_results_dict["#"+task_id] = result
+            i+=1
+
+        return step_results_dict
+
+
+    def _solve(self, state: ReWOO, step_results: dict):
+        plan = ""
+        pattern = r"#(\w+)\s*=\s*(\w+)\[(.*)\]"
+        plan_steps = state["steps"]
+        for plan_step in plan_steps:
+            
+            step = plan_step["step"]
+            matches = re.match(pattern, step)
+            task_id, tool, tool_input = matches.groups()
+            result = step_results[task_id]
+
+            print(f"plan_step: {plan_step}\n result: {result}\n\n")
+            
+
+
+        # for _plan, step_name, tool, tool_input in state["steps"]:
+        #     _results = (state["results"] or {}) if "results" in state else {}
+        #     for k, v in _results.items():
+        #         tool_input = tool_input.replace(k, v)
+        #         step_name = step_name.replace(k, v)
+        #     plan += f"Plan: {_plan}\n{step_name} = {tool}[{tool_input}]"
+        # prompt = solve_prompt.format(plan=plan, task=state["task"])
+        # result = self.llm.invoke(prompt)
+        # return {"result": result.content}
+
 
 
     def run(self, user_input):
@@ -170,7 +151,10 @@ class ReWooAgent:
             
             #print(f"\n\nPlan: {pprint.pprint(response)}")
             step_results = self._execute(response)
-            #print(f"\n\n StepResults: {step_results}\n\n")
+            #print(f"\n\n StepResults: {pprint.pprint(step_results)}\n\n")
+
+            #self._solve(response, step_results)
+
             #response = self._parse_result_for_actions(response)
             #print(f"\n\nthought:: {response}")
             # action, action_input = self._parse_result_for_actions(result=response)

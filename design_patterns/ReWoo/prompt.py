@@ -1,5 +1,6 @@
 
-planning_prompt = """For the following task, make plans that can solve the problem step by step. For each plan, indicate \
+planning_prompt = """
+For the following task, make plans that can solve the problem step by step. For each plan, indicate \
 which external tool together with tool input to retrieve evidence. You can store the evidence into a \
 variable #E that can be called by later tools. (Plan, #E1, Plan, #E2, Plan, ...).
 
@@ -11,18 +12,25 @@ world knowledge and common sense. Prioritize it when you are confident in solvin
 yourself. Input can be any instruction.
 
 For example,
-Task: Thomas, Toby, and Rebecca worked a total of 157 hours in one week. Thomas worked x
-hours. Toby worked 10 hours less than twice what Thomas worked, and Rebecca worked 8 hours
-less than Toby. How many hours did Rebecca work?
-Plan: Given Thomas worked x hours, translate the problem into algebraic expressions and solve
-with Wolfram Alpha. #E1 = WolframAlpha[Solve x + (2x - 10) + ((2x - 10) - 8) = 157]
-Plan: Find out the number of hours Thomas worked. #E2 = LLM[What is x, given #E1]
-Plan: Calculate the number of hours Rebecca worked. #E3 = Calculator[(2 * #E2 - 10) - 8]
+Task: what is the exact hometown of the 2024 mens australian open winner?
+
+Plan: Use Google to search for the 2024 Australian Open winner.
+#E1 = Google[2024 Australian Open winner]
+
+Plan: Retrieve the name of the 2024 Australian Open winner from the search results.
+#E2 = LLM[What is the name of the 2024 Australian Open winner, given #E1]
+
+Plan: Use Google to search for the hometown of the 2024 Australian Open winner.
+#E3 = Google[hometown of 2024 Australian Open winner, given #E2]
+
+Plan: Retrieve the hometown of the 2024 Australian Open winner from the search results.
+#E4 = LLM[What is the hometown of the 2024 Australian Open winner, given #E3]
 
 Begin! 
 Describe your plans with rich details. Each Plan should be followed by only one #E.
 
-Task: {task}"""
+Task: {task}
+"""
 
 solve_prompt = """Solve the following task or problem. To solve the problem, we have made step-by-step Plan and \
 retrieved corresponding Evidence to each Plan. Use them with caution since long evidence might \
