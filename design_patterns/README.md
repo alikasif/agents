@@ -12,13 +12,16 @@ This folder demonstrates various design patterns commonly used in AI and agentic
 
 **Reflection:** The AI evaluates and refines its own output iteratively, improving accuracy. For example, in code generation, it might review and rewrite code for better correctness and style.
 
-**Tool Use:** The AI interacts with external tools like databases or web searches to perform tasks requiring real-world data. An example is using a web search tool for research.
+**ReAct:** Combines reasoning and acting, where the AI thinks through a problem and uses tools iteratively, such as reasoning about a query and then using a calculator.
+
+**ReWoo:** Create plan and execute to solve complex problems
 
 **Planning:** The AI breaks down complex tasks into steps and plans their execution, such as outlining a report before writing it.
 
+**Tool Use:** The AI interacts with external tools like databases or web searches to perform tasks requiring real-world data. An example is using a web search tool for research.
+
 **Multi-Agent Collaboration:** Multiple AI agents with specific roles work together, like one researching and another analyzing data for a final report.
 
-**ReAct:** Combines reasoning and acting, where the AI thinks through a problem and uses tools iteratively, such as reasoning about a query and then using a calculator.
 
 #### Identification of Key Design Patterns
 Through the analysis, five primary design patterns emerged as central to building AI and agentic applications. These patterns are detailed below, with descriptions, examples, and supporting evidence from the reviewed sources.
