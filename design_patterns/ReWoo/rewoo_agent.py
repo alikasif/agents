@@ -5,11 +5,11 @@ from dotenv import load_dotenv
 import re
 from prompt import planning_prompt,solve_prompt
 from langchain_core.messages import HumanMessage
-from googlesearch import search
 import time
 from typing import List
 from typing_extensions import TypedDict
-import pprint
+from langchain_community.utilities import GoogleSerperAPIWrapper
+
 
 class PlanStep(TypedDict):
     plan: str
@@ -51,8 +51,6 @@ class ReWooAgent:
 
         response = self.planner.invoke(self.messages)
         
-        #print(f"\n\nthought response content :: {response["steps"]}\n\n")
-        #self.messages.append(AIMessage(content= response))
         return response
     
 
@@ -68,21 +66,32 @@ class ReWooAgent:
         Returns:
             context(str): a complete combined context 
         """
-        time.sleep(1)
+        time.sleep(3)
 
-        response = search(query, num_results=20, advanced=True)
-        context = ""
-        for result in response:
-            context += result.description
-        return context
+        search = GoogleSerperAPIWrapper()
+        results = search.run(query)
+        return results
+    
+    def _llm_call(self, tool_input, plan):
+        messages = [
+            (
+                "system",
+                f"You are a helpful assistant. You must precisely answer based on the question: {plan}. Do not include any extra information.",
+            ),
+            ("human", tool_input),
+        ]
+        result = self.llm.invoke(messages).content
+        #print(f"\n\nllm result: {result}")
+        return result
 
-    def _perform_action(self, tool, tool_input):
-        print(f"\n\n tool: {tool} tool_input: {tool_input}")
+
+    def _perform_action(self, tool, tool_input, plan):
+        #print(f"\n\n tool: {tool} \ntool_input: {tool_input}")
         result=""
         if tool == "Google":
-            result = self._google_search(tool_input)
+            return self._google_search(tool_input)
         elif tool == "LLM":
-            result = self.llm.invoke(tool_input).content
+            return self._llm_call(tool_input, plan)
         else:
             raise ValueError
 
@@ -98,15 +107,16 @@ class ReWooAgent:
         for plan_step in state["steps"]:
             
             step = plan_step["step"]
-            print(f"\nstep: {step}\n")
+            _plan = plan_step["plan"]
+            #print(f"\nstep: {step}\n")
             matches = re.match(pattern, step)
             task_id, tool, tool_input = matches.groups()
 
             # replace place holders from previous steps result            
-            for step_id, step_result in step_results_dict.items():      
+            for step_id, step_result in step_results_dict.items():   
                 tool_input = tool_input.replace(step_id, step_result)
             
-            result = self._perform_action(tool, tool_input)       
+            result = self._perform_action(tool, tool_input, _plan)
             step_results_dict["#"+task_id] = result
             i+=1
 
@@ -114,30 +124,24 @@ class ReWooAgent:
 
 
     def _solve(self, state: ReWOO, step_results: dict):
-        plan = ""
+        
         pattern = r"#(\w+)\s*=\s*(\w+)\[(.*)\]"
         plan_steps = state["steps"]
+        
+        full_plan = ""
         for plan_step in plan_steps:
             
             step = plan_step["step"]
+            _plan = plan_step["plan"]
             matches = re.match(pattern, step)
-            task_id, tool, tool_input = matches.groups()
-            result = step_results[task_id]
+            task_id, _, _ = matches.groups()
+            result = step_results["#"+task_id]
+            full_plan += f"Plan: {_plan}\nResult: {result}\n"
 
-            print(f"plan_step: {plan_step}\n result: {result}\n\n")
-            
-
-
-        # for _plan, step_name, tool, tool_input in state["steps"]:
-        #     _results = (state["results"] or {}) if "results" in state else {}
-        #     for k, v in _results.items():
-        #         tool_input = tool_input.replace(k, v)
-        #         step_name = step_name.replace(k, v)
-        #     plan += f"Plan: {_plan}\n{step_name} = {tool}[{tool_input}]"
-        # prompt = solve_prompt.format(plan=plan, task=state["task"])
-        # result = self.llm.invoke(prompt)
-        # return {"result": result.content}
-
+        #pprint.pprint(full_plan)
+        prompt = solve_prompt.format(plan=full_plan, task=state["task"])
+        result = self.llm.invoke(prompt)
+        return {"result": result.content}
 
 
     def run(self, user_input):
@@ -146,26 +150,16 @@ class ReWooAgent:
         response=""
         rewoo = ReWOO()
         rewoo["task"] = user_input
-        while i < 1:
-            response = self._plan(rewoo)
-            
-            #print(f"\n\nPlan: {pprint.pprint(response)}")
-            step_results = self._execute(response)
-            #print(f"\n\n StepResults: {pprint.pprint(step_results)}\n\n")
+        response = self._plan(rewoo)
+        
+        #print(f"\n\nPlan: {pprint.pprint(response)}")
+        step_results_dict = self._execute(response)
+        #print(f"\n\n StepResults: {pprint.pprint(step_results_dict)}\n\n")
 
-            #self._solve(response, step_results)
+        solve_response = self._solve(response, step_results_dict)
+        #print(f"Final response: {solve_response}")
 
-            #response = self._parse_result_for_actions(response)
-            #print(f"\n\nthought:: {response}")
-            # action, action_input = self._parse_result_for_actions(result=response)
-            # if action:
-            #     print(f"\n\naction = {action} action_input = {action_input}")
-            #     next_prompt = self._perform_action(action=action, action_input=action_input)
-            #     #print(f"\n\nnext prompt {next_prompt}")
-            # else:
-            #     print(f"*** NO ACTION FOUND!!")
-            i+=1
-        return response
+        return solve_response
 
 
 if __name__ == '__main__':
@@ -174,5 +168,5 @@ if __name__ == '__main__':
     user_input = input("Enter your research query: ")
     agent = ReWooAgent(planning_prompt)
     response = agent.run(user_input=user_input)
-    #print(f"\n\n final response: \n\n {response}")
+    print(f"\n\n final response: \n\n {response}")
 
