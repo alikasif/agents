@@ -11,7 +11,7 @@ from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
 from googlesearch import search
 import time
 
-class DeepResearchAgent():
+class ReACTAgent():
 
     def __init__(self, system_prompt):
         self.messages = []
@@ -104,7 +104,7 @@ if __name__ == '__main__':
 
     load_dotenv(override=True)
     user_input = input("Enter your research query: ")
-    agent = DeepResearchAgent(react_prompt)
+    agent = ReACTAgent(react_prompt)
     response = agent.run(user_input=user_input)
     print(f"\n\n final response: \n\n {response}")
 

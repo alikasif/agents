@@ -86,3 +86,7 @@ This table highlights the distinct roles each pattern plays, with some overlap, 
 ## References
 
 [AgenticAI Design Patterns](https://medium.com/data-science-collective/stop-prompting-start-designing-5-agentic-ai-patterns-that-actually-work-a59c4a409ebb)
+
+[Reflection](https://huggingface.co/blog/Kseniase/reflection)
+
+[ReACT & ReWoo](https://www.analyticsvidhya.com/blog/2024/11/agentic-ai-planning-pattern/)
