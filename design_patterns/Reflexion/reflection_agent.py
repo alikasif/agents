@@ -89,6 +89,6 @@ class BasicReflectionAgent:
 if __name__ == '__main__':
     print("\n\nThis module is designed for code writing and reviewing tasks.\n\n")
     load_dotenv(override=True)
-    agent = ReflexionAgent()
+    agent = BasicReflectionAgent()
     user_input = input("Enter your code writing request: ")
     agent.reflexion_loop(user_input)
