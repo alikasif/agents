@@ -18,16 +18,20 @@ from langgraph.graph import StateGraph, START
 from langchain_core.messages import HumanMessage, SystemMessage
 from langgraph.prebuilt import create_react_agent
 from langchain_community.tools.tavily_search import TavilySearchResults
-from prompt import blog_prompt, linkedin_prompt
+from prompt import blog_prompt, linkedin_prompt, reflection_pattern
 from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_anthropic import ChatAnthropic
 
 load_dotenv(override=True)
+
+# langgraph state management object
 class PlanExecute(TypedDict):
     input: str
     plan: List[str]
     past_steps: Annotated[List[Tuple], operator.add]
     response: str
 
+# Planner structurted output class
 class Plan(BaseModel):
     """Plan to follow in future"""
 
@@ -35,10 +39,12 @@ class Plan(BaseModel):
         description="different steps to follow, should be in sorted order"
     )
 
+# USed by RePlanner for response indicating no further re-plan
 class Response(BaseModel):
     """Response to user."""
     response: str
 
+# Re-planner structurted output class. it will either be Response for no further replan or a Plan for new steps.
 class Act(BaseModel):
     """Action to perform."""
     action: Union[Response, Plan] = Field(
@@ -54,6 +60,14 @@ llm = ChatOpenAI(api_key=os.getenv("OPENAI_API_KEY"), model=os.getenv("OPENAI_MO
 #     model=os.getenv("GOOGLE_MODEL"),
 #     temperature=0,
 #     max_retries=2,
+# )
+
+# llm = ChatAnthropic(
+#     model=os.getenv("ANTHROPIC_MODEL"),
+#     temperature=0,
+#     max_tokens=1024,
+#     timeout=None,
+#     max_retries=2,    
 # )
 
 prompt = "You are a helpful assistant."
@@ -82,7 +96,8 @@ def plan_step(state: PlanExecute):
 
 
 def execute_step(state: PlanExecute):
-    #print(f"\n\nPlanExecute step {state}")
+    
+    #print(f"\n\nPlanExecute step:\n\n {state} \n\n")
 
     plan = state["plan"]
     plan_str = "\n".join(f"{i + 1}. {step}" for i, step in enumerate(plan))
@@ -128,9 +143,29 @@ def replan_step(state: PlanExecute):
         return {"plan": output.action.steps}
 
 
+summarizer_prompt = ChatPromptTemplate.from_template(
+    """
+        For the given objective, Summarize the final content based on the past steps output. Keep the final output within 2500 words.
+        
+        Your objective was this:
+        {input}
+
+        Your original plan was this:
+        {plan}
+
+        You have currently done the follow steps:
+        {past_steps}
+
+    """
+)
+summarizer = summarizer_prompt | llm.with_structured_output(Response)
+def summarize(state: PlanExecute):
+    return summarizer.invoke(state)
+    
+
 def should_end(state: PlanExecute):
     if "response" in state and state["response"]:
-        return END
+        return "summarize"
     else:
         return "agent"
 
@@ -143,22 +178,32 @@ workflow.add_node("planner", plan_step)
 # Add the execution step
 workflow.add_node("agent", execute_step)
 
-# # Add a replan node
+# Add a replan node
 workflow.add_node("replan", replan_step)
+
+# Add a sumamry node
+workflow.add_node("summarize", summarize)
 
 workflow.add_edge(START, "planner")
 
-# # From plan we go to agent
+# From plan we go to agent
 workflow.add_edge("planner", "agent")
 
-# # From agent, we replan
+# From agent, we replan
 workflow.add_edge("agent", "replan")
+
+# From agent, we replan
+workflow.add_edge("replan", "summarize")
 
 workflow.add_conditional_edges(
     "replan",
     # Next, we pass in the function that will determine which node is called next.
     should_end,
-    ["agent", END],
+    {
+        "summarize": "summarize",
+        "agent": "agent",
+     }
+    #["agent", "summarize"],
 )
 
 app = workflow.compile()
@@ -169,10 +214,7 @@ except Exception as e:
     print(str(e))
 
 config = {"recursion_limit": 50}
-# inputs = {"input": "Write a blog about Agentic AI Design Patterns. It is important to understand these patterns to build the domain specific agents."
-#           "AI design patterns are not built in silo but are rather the combination of other pattenrs to come up with newer pattern."
-#           "Specifically about patterns like Reflection, Tool(ReACT & ReWoo) and Planning which are used to build deep reasearch agents, and solve complex problems using step by step plan like Humans."}
 
-inputs = {"input": blog_prompt }
+inputs = {"input": linkedin_prompt }
 response = app.invoke(input=inputs, config=config)
 print(f"\n\n response: \n\n {response}")
