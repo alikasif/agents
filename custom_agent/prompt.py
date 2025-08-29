@@ -24,7 +24,7 @@ Your research summary should include:
 - **Sources**: Cite where information came from
 - **Code Example**: Best sample python code available for the pattern using langgraph
 
-Organize your findings in section with detailed explanation for each sub section. Be thorough and comprehensive in your research. Produce a 10000 words impactful content
+Organize your findings in section with detailed explanation for each sub section. Be thorough and comprehensive in your research. Produce atleast 10000 words impactful content
 
 Begin your research summary below:
 """
@@ -39,7 +39,9 @@ review_prompt = """
 
 refine_prompt ="""
             Given the initial response to '{query}':\n\n{initial_response}\n\n
-            And the following critique and recommendations:\n\n{reflection}\n\n
+            And the following 
+                critique and recommendations:\n\n{reflection}\n\n
+                and google search results:\n\n{google_search_results}\n\n
             Produce a refined and improved version of the article.
     """
 
