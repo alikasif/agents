@@ -33,7 +33,7 @@ blog_prompt = """
         """
     
 linkedin_prompt= """
-        Write a 2500 characters linkedin post about AI Design patterns. Write 1 line about patterns like Reflection, Tool use, Planning, ReACT & ReWOO (Reasoning With Open Ontology) and Multi Agent
+        Write a 4000 characters linkedin post about AI Design patterns. Write 1 line about patterns like Reflection, Tool use, Planning, ReACT & ReWOO (Reasoning Without Observation) and Multi Agent
         Highlight in few words why it is important to understand what happens under the hood of Agent SDK from various providers like OpenAI, Crew, Google ADK, Autogen
         to build domain specific expert agent.
         Use simple easy to understand words which creates interest for users to read the post and know more about these patterns.

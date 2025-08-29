@@ -1,8 +1,9 @@
 import sys
-from agents import Agent, Runne
+from agents import Agent, Runner
 import os
 from openai import AsyncOpenAI
 from pydantic import BaseModel
+from agents.models.openai_chatcompletions import OpenAIChatCompletionsModel
 
 PROMPT_GENERATION_INSTRUCTIONS = (
     "You are an expert prompt engineer. Your task is to generate a highly effective, clear, and actionable prompt for a large language model (LLM) to accomplish a given user task."

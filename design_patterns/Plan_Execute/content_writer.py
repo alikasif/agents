@@ -1,26 +1,19 @@
 from typing import Annotated
 from typing_extensions import TypedDict
 from langgraph.graph import StateGraph
-from langgraph.graph.message import add_messages
 from langchain_openai import ChatOpenAI
 import os
 from dotenv import load_dotenv
-from langchain_core.messages import HumanMessage
 import operator
 from typing import Annotated, List, Tuple
 from typing_extensions import TypedDict
 from pydantic import BaseModel, Field
 from langchain_core.prompts import ChatPromptTemplate
 from typing import Union
-from typing import Literal
-from langgraph.graph import END
 from langgraph.graph import StateGraph, START
-from langchain_core.messages import HumanMessage, SystemMessage
 from langgraph.prebuilt import create_react_agent
 from langchain_community.tools.tavily_search import TavilySearchResults
-from prompt import blog_prompt, linkedin_prompt, reflection_pattern
-from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_anthropic import ChatAnthropic
+from prompt import linkedin_prompt
 
 load_dotenv(override=True)
 

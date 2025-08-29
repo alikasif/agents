@@ -2,7 +2,7 @@ import os
 from agents import Agent, Runner
 from openai import AsyncOpenAI
 from pydantic import BaseModel
-
+from agents.models.openai_chatcompletions import OpenAIChatCompletionsModel
 
 JUDGE_INSTRUCTIONS = (
         "You are an expert prompt engineer and evaluator. "
