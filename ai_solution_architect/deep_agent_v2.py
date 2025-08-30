@@ -1,44 +1,17 @@
-from typing_extensions import TypedDict
+from typing_extensions import List
 from langgraph.graph import StateGraph
 from langchain_openai import ChatOpenAI
 import os, time
 from dotenv import load_dotenv
-from typing_extensions import TypedDict
-from pydantic import BaseModel
 from langchain_core.prompts import ChatPromptTemplate
 from langgraph.graph import StateGraph, START
 from langchain_community.tools.tavily_search import TavilySearchResults
 from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
 from deep_agent_prompt import system_prompt
 from langgraph.prebuilt.tool_node import ToolNode
-from typing import List
 from langchain_community.utilities import GoogleSerperAPIWrapper
 from langchain_core.tools import Tool
-
-class Action(BaseModel):
-    action_name: str
-    args: str
-
-class ReACTResponse(BaseModel):
-    Thought: str
-    action_list: List[Action]
-
-class FinalDesign(BaseModel):
-    project_short_name: str
-    solution_approach: str
-    architecure_diagram: str
-    design_patterns: str
-    llm_sdk_tools_frameworks: str
-    detailed_design: str
-    prompting_technique: str
-    github_links: str
-
-class DeepAgentState(TypedDict):
-    input: str
-    results: ReACTResponse
-    observations: List[str]
-    counter: int = 1
-    final_design: FinalDesign
+from state_data_classes import DeepAgentState, ReACTResponse, FinalDesign
 
 
 class DeepAgent:
@@ -61,7 +34,7 @@ class DeepAgent:
 
 
     def execute(self, state: DeepAgentState):
-
+        print(f"\n\n Planning...")
         self.messages.append(SystemMessage(content=system_prompt))
         self.messages.append(HumanMessage(content=state["input"]))
                              
@@ -82,26 +55,27 @@ class DeepAgent:
             ]
         })
 
-        print(f"\n results :: {result}\n")
+        #print(f"\n results :: {result}\n")
         self.messages.append(AIMessage(content=str(result)))
         return {"results": result}
 
 
     def parse_results(self, state: DeepAgentState):
-        
+        print(f"\n\n running tools...")
         observations = []
         for action in state["results"].action_list:
             print(f"\n\n-- running {action.action_name} {action.args}\n\n")
             tool = next((tool for tool in self.tools if tool.name == action.action_name), None)
             if tool:
                 observation = tool.run(action.args)
-                print(f"\n\nTool Response: {observation}\n\n")
+                #print(f"\n\nTool Response: {observation}\n\n")
                 observations.append(observation)
                 time.sleep(3)
         return {"observations": observations}
 
 
     def observe(self, state: DeepAgentState):
+        print(f"\n\n observing the thoughts based on search results")
         self.counter+=1
         all_observations = "\n".join(state["observations"])
         self.messages.append(HumanMessage(content=all_observations))
@@ -110,20 +84,21 @@ class DeepAgent:
 
         response = llm.invoke(self.messages)
 
-        print(f"\n\nObservation Response: {response}\n\n")
+        #print(f"\n\nObservation Response: {response}\n\n")
         self.messages.append(AIMessage(content=str(response)))
         return {"results": response}
 
 
     def final_response(self, state: DeepAgentState):
+        print(f"\n\n generating final response....")
         all_observations = "\n".join(state["observations"])
         self.messages.append(HumanMessage(content=all_observations))
         
         llm = self.llm.with_structured_output(FinalDesign)
 
         response = llm.invoke(self.messages)
-        print("\n=================================================================================================\n")
-        print(f"\n\nFinal Response: {response}\n\n")
+        #print("\n=================================================================================================\n")
+        #print(f"\n\nFinal Response: {response}\n\n")
         self.messages.append(AIMessage(content=str(response)))
         return {"final_design": response}
 
@@ -142,6 +117,7 @@ class DeepAgent:
         
         file_name = state["final_design"].project_short_name.replace(" ", "_").lower()
         filename = f"./ai_solution_architect/output/{file_name}_solution_architecture.md"
+        print(f"\n\n writng to file:: {filename} ")
 
         md_content = f"""
 # Solution Architecture
@@ -205,19 +181,19 @@ def run():
     load_dotenv(override=True)
     
     llm = ChatOpenAI(api_key=os.getenv("OPENAI_API_KEY"), model=os.getenv("OPENAI_MODEL"))
-    tools = [TavilySearchResults(max_results=5)]
     
-    agent = DeepAgent(llm, None, tools)    
+    agent = DeepAgent(llm, None, None)    
     app = agent.build_graph()
 
     config = {"recursion_limit": 10}
 
     #user_input = "Build a chat bot that can answer questions about the stock market"
     #user_input = "Build a rag agent"
-    user_input = "Coding agent that can write, debug and explain code"
-    inputs = {"input": user_input }
-    #inputs = HumanMessage("Agentic AI Design Pattern: Reflection" )
-    response = app.invoke(input=inputs, config=config)
+    #user_input = "Coding agent that can write, debug and explain code"
+    user_input = "prompt generator with self improvement"
+    
+    inputs = {"input": user_input }    
+    app.invoke(input=inputs, config=config)
 
 if __name__ == "__main__":
     run()
