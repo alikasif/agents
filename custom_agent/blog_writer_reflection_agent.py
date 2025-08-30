@@ -9,7 +9,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from langgraph.graph import StateGraph, START
 from langchain_community.tools.tavily_search import TavilySearchResults
 from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
-from prompt import research_prompt, review_prompt, refine_prompt
+from prompt import research_prompt, review_prompt, refine_prompt, blog_writer_prompt
 from langgraph.prebuilt.tool_node import ToolNode
 from typing import List
 from langchain_google_genai import ChatGoogleGenerativeAI
@@ -17,12 +17,16 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_community.utilities import GoogleSerperAPIWrapper
 
 class PlanExecute(TypedDict):
+    prompt: str
     input: str
     research_summary: str
     feedback: str
     google_searches: List[str]
     google_search_results: str
     refined_summary: str
+
+class PromptGeneration(BaseModel):
+    prompt: str
 
 class Research(BaseModel):
     research_summary: str
@@ -38,17 +42,18 @@ class GoogleSearchResults(BaseModel):
     search_summary: str
 
 
-class DeepAgent:
+class DeepReflectionAgent:
     
     def __init__(self):
         self.tools = [TavilySearchResults(max_results=5)]
-        #self.llm = ChatOpenAI(api_key=os.getenv("OPENAI_API_KEY"), model=os.getenv("OPENAI_MODEL"))
-        self.llm = ChatGoogleGenerativeAI(model=os.getenv("GOOGLE_MODEL"))
+        self.llm = ChatOpenAI(api_key=os.getenv("OPENAI_API_KEY"), model=os.getenv("OPENAI_MODEL"))
+        #self.llm = ChatGoogleGenerativeAI(model=os.getenv("GOOGLE_MODEL"))
         self.parser = StrOutputParser()
         self.search = GoogleSerperAPIWrapper()
 
 
     def research(self, state: PlanExecute):
+        
         messages = [
                 SystemMessage(
                     content=research_prompt
@@ -172,7 +177,7 @@ class DeepAgent:
     def run(self):
         app = self.build_graph()
 
-        config = {"recursion_limit": 5}
+        config = {"recursion_limit": 10}
 
         inputs = {"input": "Agentic AI Design Pattern: Reflection" }
         #inputs = HumanMessage("Agentic AI Design Pattern: Reflection" )
@@ -181,7 +186,7 @@ class DeepAgent:
 
 if __name__ == "__main__":
     load_dotenv(override=True)
-    deep_agent = DeepAgent()
+    deep_agent = DeepReflectionAgent()
     deep_agent.run()
 
 
