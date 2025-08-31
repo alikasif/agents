@@ -71,6 +71,7 @@ class DeepReflectionAgent:
         #print(f"\n\n {result}\n\n")
         return {"research_summary": result.research_summary, "google_searches": result.google_searches}
 
+
     def critic(self, state: PlanExecute):
         
         messages = [
@@ -122,8 +123,29 @@ class DeepReflectionAgent:
         return {"refined_summary": result.refined_summary}
         
 
-    def write(self):
-        pass
+    def write(self, state: PlanExecute):
+        """
+        Writes the refined_summary from PlanExecute to a markdown file.
+        Args:
+            state (PlanExecute): The agent state containing refined_summary.
+        """
+        refined_summary = state.get("refined_summary")
+        if not refined_summary:
+            print("No refined summary found to write.")
+            return
+
+        # Generate a filename based on the input prompt
+        file_name = state["input"].replace(" ", "_").lower()[:50]
+        filename = f"./custom_agent/output/{file_name}_blog.md"
+
+        # Ensure output directory exists
+        os.makedirs(os.path.dirname(filename), exist_ok=True)
+
+        with open(filename, "w", encoding="utf-8") as f:
+            f.write(f"# Blog Post\n\n")
+            f.write(refined_summary)
+        
+        print(f"\nMarkdown file written to: {filename}")
 
     def reevaluate(self):
         pass
@@ -156,6 +178,7 @@ class DeepReflectionAgent:
         workflow.add_node("refiner", self.refine)
         workflow.add_node("google_search", self.google_search)
         workflow.add_node("print_results", self.print_results)
+        workflow.add_node("write", self.write)
         
         # add edges
         workflow.add_edge(START, "researcher")
@@ -163,7 +186,7 @@ class DeepReflectionAgent:
         workflow.add_edge("researcher", "google_search")
         workflow.add_edge("reviewer", "refiner")
         workflow.add_edge("google_search", "refiner")
-        workflow.add_edge("refiner", "print_results")
+        workflow.add_edge("refiner", "write")
 
         app = workflow.compile()
 
@@ -179,7 +202,7 @@ class DeepReflectionAgent:
 
         config = {"recursion_limit": 10}
 
-        inputs = {"input": "Agentic AI Design Pattern: Reflection" }
+        inputs = {"input": "AI solution architect which can assist the users in designing the Agentic system using latest technology" }
         #inputs = HumanMessage("Agentic AI Design Pattern: Reflection" )
         response = app.invoke(input=inputs, config=config)
 

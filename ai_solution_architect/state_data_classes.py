@@ -9,6 +9,10 @@ class Action(BaseModel):
 class ReACTResponse(BaseModel):
     Thought: str
     action_list: List[Action]
+    clarifying_questions: List[str]
+
+class DesignReview(BaseModel):
+    review_comments: str
 
 class FinalDesign(BaseModel):
     project_short_name: str
@@ -23,6 +27,8 @@ class FinalDesign(BaseModel):
 class DeepAgentState(TypedDict):
     input: str
     results: ReACTResponse
-    observations: List[str]
+    tool_messages: List[str]
+    question_answers: List[dict]
     counter: int = 1
     final_design: FinalDesign
+    design_review: DesignReview

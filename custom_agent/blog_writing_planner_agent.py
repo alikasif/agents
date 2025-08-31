@@ -115,6 +115,31 @@ class DeepBlogAgent:
         return {"refined_blog": result.refined_blog}
 
 
+    def write(self, state: PlanExecute):
+        """
+        Writes the refined_summary from PlanExecute to a markdown file.
+        Args:
+            state (PlanExecute): The agent state containing refined_summary.
+        """
+        refined_summary = state.get("refined_blog")
+        if not refined_summary:
+            print("No refined summary found to write.")
+            return
+
+        # Generate a filename based on the input prompt
+        file_name = state["input"].replace(" ", "_").lower()[:50]
+        filename = f"./custom_agent/output/{file_name}_blog1.md"
+
+        # Ensure output directory exists
+        os.makedirs(os.path.dirname(filename), exist_ok=True)
+
+        with open(filename, "w", encoding="utf-8") as f:
+            f.write(f"# Blog Post\n\n")
+            f.write(refined_summary)
+        
+        print(f"\nMarkdown file written to: {filename}")
+
+
     def print_results(self, state: PlanExecute):
         print(f"\n\n Final Results: \n\n \
               plan_string :: {state['plan_string']} \n \
@@ -139,13 +164,14 @@ class DeepBlogAgent:
         workflow.add_node("planner", self.planner)
         workflow.add_node("execute", self.execute)
         workflow.add_node("review", self.review)
+        workflow.add_node("write", self.write)
         workflow.add_node("print_results", self.print_results)
         
         # add edges
         workflow.add_edge(START, "planner")
         workflow.add_edge("planner", "execute")
         workflow.add_edge("execute", "review")
-        workflow.add_edge("review", "print_results")
+        workflow.add_edge("review", "write")
 
         app = workflow.compile()
 
@@ -162,7 +188,7 @@ class DeepBlogAgent:
 
         config = {"recursion_limit": 10}
 
-        inputs = {"input": "Agentic AI Design Pattern: Reflection" }
+        inputs = {"input": "AI solution architect which can assist the users in designing the Agentic system using latest technology" }
         #inputs = HumanMessage("Agentic AI Design Pattern: Reflection" )
         response = app.invoke(input=inputs, config=config)
 
