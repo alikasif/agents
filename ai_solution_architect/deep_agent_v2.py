@@ -275,7 +275,7 @@ def run():
     user_input = "build agentic RAG system"
     
     inputs = {"input": user_input }    
-    app.invoke(input=inputs, config=config)
+    #app.invoke(input=inputs, config=config)
 
 if __name__ == "__main__":
     run()
