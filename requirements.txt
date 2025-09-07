@@ -701,3 +701,5 @@ langchain-tavily==0.2.11
 ascii-magic==2.3.0
 grandalf==0.8
 langchain-google-genai==2.1.9
+arxiv==2.2.0
+PyMuPDF==1.26.4
