@@ -336,7 +336,7 @@ numpy==2.3.0
     #   semantic-kernel
 ollama==0.5.1
     # via autogen-ext
-openai==1.85.0
+openai==1.99.3
     # via
     #   agents (pyproject.toml)
     #   autogen-ext
@@ -703,3 +703,5 @@ grandalf==0.8
 langchain-google-genai==2.1.9
 arxiv==2.2.0
 PyMuPDF==1.26.4
+ag2[openai]==0.9.9
+pytest==8.4.2

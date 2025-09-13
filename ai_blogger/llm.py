@@ -1,13 +1,23 @@
 from langchain_openai import ChatOpenAI
+from langchain_google_genai import ChatGoogleGenerativeAI
+
 import os
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.prompts import ChatPromptTemplate
+from data_classes import LLMType
 
 class LLM:
 
-    def __init__(self, structured_output_class: type = None):
-        self.llm = ChatOpenAI(api_key=os.getenv("OPENAI_API_KEY"), model=os.getenv("OPENAI_MODEL"))
-        self.llm = self.llm if not structured_output_class else self.llm.with_structured_output(structured_output_class)
+    def __init__(self, llm_type: LLMType = LLMType.OPEN_AI, structured_output_class: type = None):
+
+        self.llm = None
+        if llm_type == LLMType.OPEN_AI:
+            self.llm = ChatOpenAI(model=os.getenv("OPENAI_MODEL"))
+            self.llm = self.llm if not structured_output_class else self.llm.with_structured_output(structured_output_class)
+        elif llm_type == LLMType.GEMINI:
+            self.llm = ChatGoogleGenerativeAI(model=os.getenv("GOOGLE_MODEL"))
+        else:
+            raise("LLM type missing!!")
 
     def invoke(self, messages: list) -> str:
         

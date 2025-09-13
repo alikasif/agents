@@ -1,15 +1,66 @@
 from dotenv import load_dotenv
-from agent import BloggerAgent
-from prompt import deep_research_notebook_prompt
-
+from analyst_agent import AnalystAgent
+from researcher_agent import ResearcherAgent
+from blog_writer_agent import BloggerAgent
+from editor_agent import EditorAgent
+from data_classes import TopicResearch
+from prompt import analyst_prompt, researcher_prompt, blog_writer_prompt, editor_pompt
 import logging
+import time
 
 logging.basicConfig(level=logging.INFO) # Set the root logger level to INFO
 
+
+def analysis(user_input: str):
+    prompt = analyst_prompt.format(topic=user_input)
+    agent = AnalystAgent(prompt)
+    response = agent.run(user_input=user_input)
+    print(f"\n\n final response: \n\n {response}")
+    return response.topics_to_research
+
+
+def editor(topics_to_research):
+
+    topics=[]
+    i=1
+    for topic in topics_to_research:
+        topic = f"{i}. {topic}"
+        topics.append(topic)
+    all_topics = "\n".join(topics)
+
+    prompt = editor_pompt.format(list_of_topics=all_topics)
+    agent = EditorAgent(prompt)
+    response = agent.run(user_input=all_topics)
+    return response.ordered_topics
+
+
+def research(topic_to_research):
+   
+    agent = ResearcherAgent(researcher_prompt)
+    time.sleep(10)
+    response = agent.run(user_input=topic_to_research)
+    #print(f"\n\n\ntopic: {topic} \n\n final response: \n\n {response.detailed_research}")
+    # detailed_researches.append(response.detailed_research)
+    
+    # pretty_printed_list = [item.model_dump() for item in detailed_researches]
+
+    # pprint(pretty_printed_list)
+
+    return response.detailed_research
+
+def blog(detailed_research = TopicResearch):
+
+    blog_writer_prompt_formatted = blog_writer_prompt.format(content=detailed_research.detailed_researched_content)
+    blogger = BloggerAgent(blog_writer_prompt_formatted)
+    
+    blogger.write_blog()
+
 load_dotenv(override=True)
 user_input = input("Enter your research query: ")
-prompt= deep_research_notebook_prompt.format(topic=user_input)
-agent = BloggerAgent(prompt)
-response = agent.run(user_input=user_input)
-print(f"\n\n final response: \n\n {response}")
+topics_to_research = analysis(user_input)
+topics_to_research = editor(topics_to_research)
+for topic in topics_to_research:
+    detailed_research = research(topic)
+    blog(detailed_research)
+
 
