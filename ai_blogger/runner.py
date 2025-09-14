@@ -4,17 +4,18 @@ from researcher_agent import ResearcherAgent
 from blog_writer_agent import BloggerAgent
 from editor_agent import EditorAgent
 from data_classes import TopicResearch
-from prompt import analyst_prompt, researcher_prompt, blog_writer_prompt, editor_pompt
+from prompt import analyst_prompt, researcher_prompt, blog_writer_prompt, editor_pompt, deep_research_prompt
 import logging
 import time
+from utils import get_today_str
 
 logging.basicConfig(level=logging.INFO) # Set the root logger level to INFO
 
 
 def analysis(user_input: str):
-    prompt = analyst_prompt.format(topic=user_input)
-    agent = AnalystAgent(prompt)
-    response = agent.run(user_input=user_input)
+    
+    agent = AnalystAgent(deep_research_prompt)
+    response = agent.run(user_input=user_input, date_str=get_today_str())
     print(f"\n\n final response: \n\n {response}")
     return response.topics_to_research
 
@@ -36,10 +37,10 @@ def editor(topics_to_research):
 
 def research(topic_to_research):
    
-    agent = ResearcherAgent(researcher_prompt)
+    agent = ResearcherAgent(deep_research_prompt)
     time.sleep(10)
-    response = agent.run(user_input=topic_to_research)
-    #print(f"\n\n\ntopic: {topic} \n\n final response: \n\n {response.detailed_research}")
+    response = agent.run(user_input=topic_to_research, date_str=get_today_str())
+    print(f"\n\n\ntopic: {topic_to_research} \n\n final response: \n\n {response}")
     # detailed_researches.append(response.detailed_research)
     
     # pretty_printed_list = [item.model_dump() for item in detailed_researches]
@@ -56,11 +57,12 @@ def blog(detailed_research = TopicResearch):
     blogger.write_blog()
 
 load_dotenv(override=True)
+#research("LLM Context Engineering")
 user_input = input("Enter your research query: ")
 topics_to_research = analysis(user_input)
-topics_to_research = editor(topics_to_research)
-for topic in topics_to_research:
-    detailed_research = research(topic)
-    blog(detailed_research)
+# topics_to_research = editor(topics_to_research)
+# for topic in topics_to_research:
+#     detailed_research = research(topic)
+#     blog(detailed_research)
 
 

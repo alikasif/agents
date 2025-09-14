@@ -4,6 +4,12 @@ A modular Python SDK for building structured prompts for LLMs and agentic workfl
 
 ## What is it?
 Prompt SDK is a toolkit that helps developers create, validate, and manage prompt templates for advanced AI agents. It enforces best practices, supports extensibility, and makes prompt engineering reproducible and maintainable.
+SDK will also ensure that the generated prompt is formated for effective results.
+We can also integrate a small language model fine tuned for effective prompt which can further improve the SDK generated output.!! Battery included !!
+
+Examples:
+
+[prompt formating](https://www.news.aakashg.com/p/prompt-engineering)
 
 ## Why use it?
 - **Validation:** Ensures all required fields are present before prompt generation.
@@ -11,6 +17,7 @@ Prompt SDK is a toolkit that helps developers create, validate, and manage promp
 - **Chainable API:** Fluent, readable code for building prompts.
 - **Separation of Concerns:** Each prompt type is a separate class/module.
 - **Factory Pattern:** Instantiates the right prompt builder for your use case.
+- **Formatting:** Format the prompt for most effective results
 
 ## Features
 - Base class with validation and chainable setters

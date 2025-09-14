@@ -4,7 +4,7 @@ from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
 from tools import *
 import logging
 from llm import LLM
-from data_classes import AnalystOutput
+from data_classes import AnalystOutput, LLMType
 from tools import google_search
 
 
@@ -17,23 +17,22 @@ class AnalystAgent():
         self.messages = []
         self.iterations = iterations
         self.system_prompt = system_prompt
-        self.messages.append(SystemMessage(content= self.system_prompt))
+        
+        tools = [google_search, arxiv_search, think_tool]
+        self.llm = LLM(llm_type=LLMType.GEMINI, structured_output_class=AnalystOutput, tools=tools)
 
-        self.llm = LLM(structured_output_class=AnalystOutput)
-        #self.action_re = re.compile('^Action: (\w+): (.*)$')
-        #self.action_re = re.compile(r'Action:\s*(\w+)\[\s*"([^"]+)"\s*\]')
         self.action_re = re.compile(r"^(\w+)\[(.+)\]$")
         self.available_actions= {
             "google_search": google_search,
-            "arxiv_search": arxiv_search
-            }
-
+            "arxiv_search": arxiv_search,
+            "think_tool": think_tool
+        }
 
     def _thought(self, user_input):
         self.messages.append(HumanMessage(content=user_input))
 
         response = self.llm.invoke(self.messages)
-        logging.info(f"\n\nthought response content :: {response}\n\n")
+        logging.info(f"\n\nthought response content ::\n {response}\n\n")
         self.messages.append(AIMessage(content=str(response)))
         return response
 
@@ -41,12 +40,11 @@ class AnalystAgent():
     def _action(self, response: AnalystOutput):
 
         tool, input = self._parse_result_for_actions(response.action)
-        observation = ""
+        observation = None
         if tool and input:
             observation = tool(input)   
         logging.info(f"\nobservation: {observation}\n\n") 
-        next_prompt = "Observation: {}".format(observation)
-        return next_prompt
+        return observation
     
 
     def _parse_result_for_actions(self, result):
@@ -63,21 +61,25 @@ class AnalystAgent():
             return None, None
 
 
-    def run(self, user_input):
-        i =0
-        next_prompt = user_input
-        response = self._thought(next_prompt)
-        
-        while i < self.iterations:
-            observation = self._action(response)
+    def _react_loop(self, user_input):
+        i=0
+        response = self._thought(user_input)        
+        while i < 5:
+            action_output = self._action(response)
+            if not action_output:
+                break
+            observation = "Observation: {}".format(action_output)
             response = self._thought(observation)
             i+=1
-        
-        # logging.info(f"\n\nresponse1: {response}")
-        # response = self._thought(next_prompt)
-        # logging.info(f"\n\nresponse2: {response}")
-        # response = self._finalize(response)
-        # logging.info(f"\n\nresponse3: {response}")
         return response
+
+
+    def run(self, user_input: str, date_str: str):
+
+        self.messages.clear()
+        self.system_prompt = self.system_prompt.format(topic=user_input, date=date_str)
+        self.messages.append(SystemMessage(content= self.system_prompt))      
+
+        return self._react_loop(user_input)
 
 

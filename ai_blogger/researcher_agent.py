@@ -19,16 +19,16 @@ class ResearcherAgent():
         self.messages = []
 
         self.system_prompt = system_prompt
+        tools = [google_search, arxiv_search, think_tool]
+        self.llm = LLM(structured_output_class=ResearcherOutput, tools=tools)
 
-        self.llm = LLM(structured_output_class=ResearcherOutput)
-        #self.action_re = re.compile('^Action: (\w+): (.*)$')
-        #self.action_re = re.compile(r'Action:\s*(\w+)\[\s*"([^"]+)"\s*\]')
         self.action_re = re.compile(r"^(\w+)\[(.+)\]$")
         self.available_actions= {
             "google_search": google_search,
-            "arxiv_search": arxiv_search
-            }
-
+            "arxiv_search": arxiv_search,
+            "think_tool": think_tool
+        }
+        
 
     def _thought(self, user_input):
         self.messages.append(HumanMessage(content=user_input))
@@ -74,10 +74,10 @@ class ResearcherAgent():
         return response
 
 
-    def run(self, user_input: str):
+    def run(self, user_input: str, date_str: str):
 
         self.messages.clear()
-        self.system_prompt = self.system_prompt.format(topic=user_input)
+        self.system_prompt = self.system_prompt.format(topic=user_input, date=date_str)
         self.messages.append(SystemMessage(content= self.system_prompt))      
 
         return self._react_loop(user_input)
