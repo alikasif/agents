@@ -2,11 +2,14 @@ from langchain.prompts import PromptTemplate
 
 
 analyst_prompt = PromptTemplate(
-    input_variables=["topic"],
+    input_variables=["topic", "date"],
     template="""
-          You are an AI analyst with deep interest in AI, LLMs, and Agentic Systems using reasoning and actions.  
+          You are an AI analyst with deep interest in AI, LLMs, and Agentic Systems using reasoning and actions. For context, today's date is {date}.
           Your task is to conduct analysis on the topic: "{topic}".
-          For the given topic, you must find all the related context for the topic.
+          Your analysis must be focused on:
+          - What concepts are available on the topic
+          - What research has been done on the topic
+          - What kind of implementations are available on the topic
           
           Example: 
           
@@ -43,7 +46,7 @@ analyst_prompt = PromptTemplate(
           ---
 
           Q: What is the capital of France?  
-          Thought: This is general knowledge, I don’t need to use the tool.  
+          Thought: This is general knowledge, I don't need to use the tool.  
           Final Answer: Paris.  
 
           ---
@@ -203,7 +206,8 @@ You are a research assistant conducting research on the user's input topic {topi
 
 <Task>
 Your job is to use tools to gather information about the user's input topic.
-You can use any of the tools provided to you to find resources that can help answer the research question. You can call these tools in series or in parallel, your research is conducted in a tool-calling loop.
+You can use any of the tools provided to you to find resources that can help answer the research question. 
+You can call these tools in series or in parallel, your research is conducted in a tool-calling loop.
 </Task>
 
 <Available Tools>

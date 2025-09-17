@@ -7,15 +7,15 @@ from data_classes import TopicResearch
 from prompt import analyst_prompt, researcher_prompt, blog_writer_prompt, editor_pompt, deep_research_prompt
 import logging
 import time
-from utils import get_today_str
+from utils import current_date_str
 
 logging.basicConfig(level=logging.INFO) # Set the root logger level to INFO
 
 
 def analysis(user_input: str):
     
-    agent = AnalystAgent(deep_research_prompt)
-    response = agent.run(user_input=user_input, date_str=get_today_str())
+    agent = AnalystAgent(analyst_prompt)
+    response = agent.run(user_input=user_input, date_str=current_date_str())
     print(f"\n\n final response: \n\n {response}")
     return response.topics_to_research
 
@@ -39,7 +39,7 @@ def research(topic_to_research):
    
     agent = ResearcherAgent(deep_research_prompt)
     time.sleep(10)
-    response = agent.run(user_input=topic_to_research, date_str=get_today_str())
+    response = agent.run(user_input=topic_to_research, date_str=current_date_str())
     print(f"\n\n\ntopic: {topic_to_research} \n\n final response: \n\n {response}")
     # detailed_researches.append(response.detailed_research)
     
@@ -49,10 +49,10 @@ def research(topic_to_research):
 
     return response.detailed_research
 
-def blog(detailed_research = TopicResearch):
+def blog(user_input, detailed_research = TopicResearch):
 
     blog_writer_prompt_formatted = blog_writer_prompt.format(content=detailed_research.detailed_researched_content)
-    blogger = BloggerAgent(blog_writer_prompt_formatted)
+    blogger = BloggerAgent(blog_writer_prompt_formatted, user_input)
     
     blogger.write_blog()
 
@@ -60,9 +60,9 @@ load_dotenv(override=True)
 #research("LLM Context Engineering")
 user_input = input("Enter your research query: ")
 topics_to_research = analysis(user_input)
-# topics_to_research = editor(topics_to_research)
-# for topic in topics_to_research:
-#     detailed_research = research(topic)
-#     blog(detailed_research)
+topics_to_research = editor(topics_to_research) 
+for topic in topics_to_research:
+    detailed_research = research(topic)
+    blog(user_input, detailed_research)
 
 

@@ -11,10 +11,10 @@ logging.basicConfig(level=logging.INFO) # Set the root logger level to INFO
 class BloggerAgent():
 
 
-    def __init__(self, system_prompt):
+    def __init__(self, system_prompt, user_input):
 
         self.messages = []
-
+        self.user_input = user_input
         self.system_prompt = system_prompt
         self.messages.append(SystemMessage(content=self.system_prompt))
 

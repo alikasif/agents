@@ -42,7 +42,7 @@ class AnalystAgent():
         tool, input = self._parse_result_for_actions(response.action)
         observation = None
         if tool and input:
-            observation = tool(input)   
+            observation = tool.invoke(input)   
         logging.info(f"\nobservation: {observation}\n\n") 
         return observation
     
