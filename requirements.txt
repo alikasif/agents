@@ -469,7 +469,7 @@ pymeta3==0.5.1
     # via pybars4
 pyopenssl==25.1.0
     # via aiortc
-pypdf==5.6.0
+pypdf==5.9.0
     # via agents (pyproject.toml)
 pypdf2==3.0.1
     # via agents (pyproject.toml)
@@ -705,4 +705,5 @@ arxiv==2.2.0
 PyMuPDF==1.26.4
 ag2[openai]==0.9.9
 pytest==8.4.2
-crewai==0.193.0
+crewai==0.193.2
+crewai-tools==0.73.1

@@ -1,21 +1,26 @@
-#!/usr/bin/env python
-# src/financial_researcher/main.py
+
 import os
-from financial_researcher.crew import ResearchCrew
+from crew import BloggerCrew
 
 # Create output directory if it doesn't exist
 os.makedirs('output', exist_ok=True)
+
+def read_content() -> str:
+    """Read the topic.txt file and return its content as a string."""
+    with open("./ai_blogger/topic.txt", "r", encoding="utf-8") as f:
+        return f.read()
 
 def run():
     """
     Run the research crew.
     """
     inputs = {
-        'company': 'Apple'
+        'topic': 'Evaluation of LLM and LLM based Applications',
+        'content': read_content()
     }
 
     # Create and run the crew
-    result = ResearchCrew().crew().kickoff(inputs=inputs)
+    result = BloggerCrew().crew().kickoff(inputs=inputs)
 
     # Print the result
     print("\n\n=== FINAL REPORT ===\n\n")
