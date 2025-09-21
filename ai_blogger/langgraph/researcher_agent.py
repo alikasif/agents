@@ -4,22 +4,24 @@ from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
 from tools import *
 import logging
 from llm import LLM
-from data_classes import AnalystOutput, LLMType
+from data_classes import ResearcherOutput
 from tools import google_search
-
+from langchain.prompts import PromptTemplate
+from pprint import pprint
+from data_classes import LLMType
 
 logging.basicConfig(level=logging.INFO) # Set the root logger level to INFO
 
-class AnalystAgent():
 
-    def __init__(self, system_prompt, iterations=5):
+class ResearcherAgent():
+
+    def __init__(self, system_prompt: PromptTemplate):
 
         self.messages = []
-        self.iterations = iterations
+
         self.system_prompt = system_prompt
-        
         tools = [google_search, arxiv_search, think_tool]
-        self.llm = LLM(llm_type=LLMType.GEMINI, structured_output_class=AnalystOutput, tools=tools)
+        self.llm = LLM(llm_type=LLMType.GEMINI, structured_output_class=ResearcherOutput, tools=tools)
 
         self.action_re = re.compile(r"^(\w+)\[(.+)\]$")
         self.available_actions= {
@@ -27,24 +29,26 @@ class AnalystAgent():
             "arxiv_search": arxiv_search,
             "think_tool": think_tool
         }
+        
 
     def _thought(self, user_input):
         self.messages.append(HumanMessage(content=user_input))
 
         response = self.llm.invoke(self.messages)
-        logging.info(f"\n\nthought response content ::\n {response}\n\n")
+        logging.info(f"\n\nthought response content :: {response}\n\n")
         self.messages.append(AIMessage(content=str(response)))
         return response
 
 
-    def _action(self, response: AnalystOutput):
+    def _action(self, response: ResearcherOutput):
 
         tool, input = self._parse_result_for_actions(response.action)
-        observation = None
+        observation = ""
         if tool and input:
-            observation = tool.invoke(input)   
+            observation = tool(input)   
         logging.info(f"\nobservation: {observation}\n\n") 
-        return observation
+        next_prompt = "Observation: {}".format(observation)
+        return next_prompt
     
 
     def _parse_result_for_actions(self, result):
@@ -64,11 +68,8 @@ class AnalystAgent():
     def _react_loop(self, user_input):
         i=0
         response = self._thought(user_input)        
-        while i < 5:
-            action_output = self._action(response)
-            if not action_output:
-                break
-            observation = "Observation: {}".format(action_output)
+        while i < 3:
+            observation = self._action(response)
             response = self._thought(observation)
             i+=1
         return response
@@ -81,5 +82,6 @@ class AnalystAgent():
         self.messages.append(SystemMessage(content= self.system_prompt))      
 
         return self._react_loop(user_input)
+
 
 

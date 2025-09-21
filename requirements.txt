@@ -705,3 +705,4 @@ arxiv==2.2.0
 PyMuPDF==1.26.4
 ag2[openai]==0.9.9
 pytest==8.4.2
+crewai==0.193.0

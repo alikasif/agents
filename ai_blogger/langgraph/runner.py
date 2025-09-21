@@ -7,7 +7,7 @@ from data_classes import TopicResearch
 from prompt import analyst_prompt, researcher_prompt, blog_writer_prompt, editor_pompt, deep_research_prompt
 import logging
 import time
-from ai_blogger.langgraph.utils import current_date_str
+from utils import current_date_str
 
 logging.basicConfig(level=logging.INFO) # Set the root logger level to INFO
 
@@ -65,10 +65,14 @@ def read_topic():
         return f.read()
     
 load_dotenv(override=True)
-goal= "Evaluation of LLM Models & Applications. common metrics, how to choose metrics, scorers, why to do evals? what to do in evals? tools for evals. eval benchmarks, metrics to asses rag, agents & llm applications"
-#research("LLM Memory Architectures (Parametric, Working, Persistent, Episodic, Semantic, Procedural Memory)")
-user_input = read_topic()
-topics_to_research = analysis(goal, user_input)
+goal= "Evaluation of LLM Models & Applications. Approaches, Implementations and Frameworks"
+research("1. Evaluation Metrics: What Needs to Be Measured   \
+	        1.1. Generic Metrics: Accuracy, Recall, F1, Coherence, Perplexity, Latency   \
+	        1.2. LLM-Specific Metrics: Hallucination, Faithfulness, Relevancy, Task Completion, Contextual Precision, Tool Correctness, Bias, Toxicity, Summarization, Prompt Alignment, Custom Metrics   \
+	        1.3. Characteristics of Good Metrics (Quantitative, Reliable, Accurate, Human-Correlated)"
+         )
+# user_input = read_topic()
+# topics_to_research = analysis(goal, user_input)
 # topics_to_research = editor(goal, topics_to_research) 
 # for topic in topics_to_research[:3]:
 #     detailed_research = research(topic)

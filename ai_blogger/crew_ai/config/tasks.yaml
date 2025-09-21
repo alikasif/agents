@@ -1,0 +1,91 @@
+
+tech_blog_task:
+  description: >
+    Write a well-structured tech blog post on the topic: {topic}.
+    The blog must follow best practices of technical writing and be focused only on {topic}.
+    
+    Structure Requirements:
+      1. Title & Subtitle:
+         - Clear, keyword-rich title.
+         - Optional subtitle for context.
+      
+      2. Introduction:
+         - Hook: why the topic matters.
+         - Context: the problem or industry relevance.
+         - Promise: what the reader will learn.
+      
+      3. Background / Primer:
+         - Short explanation of key concepts.
+         - Use analogies or simple examples.
+      
+      4. Main Sections (Deep Dive):
+         - For each subtopic:
+            a. Explain the concept clearly.
+            b. Include short, runnable code snippet (under 20 lines).
+            c. Walk through snippet line by line or conceptually.
+            d. Highlight trade-offs, best practices, or real-world implications.
+      
+      5. Supporting Content:
+         - Use diagrams, comparison tables, or case studies where helpful.
+         - Reference research papers, repos, or official docs.
+      
+      6. Common Pitfalls & Solutions:
+         - List common mistakes.
+         - Provide fixes, alternatives, or lessons learned.
+      
+      7. Conclusion:
+         - Summarize key takeaways in 3-5 bullet points.
+         - Suggest next steps (further experiments, readings, tools).
+         - Optionally, add future trends or open challenges.
+      
+      8. Optional Add-ons:
+         - TL;DR / summary box at the top.
+         - FAQ section.
+         - Further reading (citations, links).
+         - Call-to-action (e.g., link to repo, subscribe).
+    
+    Writing Guidelines:
+      - Prioritize clarity + practicality over jargon.
+      - Code snippets must be tested, minimal, and copy-paste ready.
+      - Do not add irrelevant topics — stick strictly to {topic}.
+      - Use an educational, engaging, and approachable tone.
+  expected_output: >
+    A complete, well-structured tech blog draft on {topic}, with explanations,
+    runnable code snippets, examples, and practical takeaways. The blog should
+    be engaging, educational, and ready for publication.
+  agent: researcher
+
+
+research_task:
+  description: >
+    Conduct thorough research on AI topic {topic}. Focus on:
+    1. Explaination about the topic
+    2. Why it is relevant?
+    3. Major challenges and opportunities
+    4. Recent news and events
+    5. Future outlook and potential developments
+
+    Make sure to organize your findings in a structured format with clear sections.
+  expected_output: >
+    A comprehensive research document with well-organized sections covering
+    all the requested aspects of {company}. Include specific facts, figures,
+    and examples where relevant.
+  agent: researcher
+
+analysis_task:
+  description: >
+    Analyze the research findings and create a comprehensive report on {company}.
+    Your report should:
+    1. Begin with an executive summary
+    2. Include all key information from the research
+    3. Provide insightful analysis of trends and patterns
+    4. Offer a market outlook for company, noting that this should not be used for trading decisions
+    5. Be formatted in a professional, easy-to-read style with clear headings
+  expected_output: >
+    A polished, professional report on {company} that presents the research
+    findings with added analysis and insights. The report should be well-structured
+    with an executive summary, main sections, and conclusion.
+  agent: analyst
+  context:
+    - research_task
+  output_file: output/report.md
