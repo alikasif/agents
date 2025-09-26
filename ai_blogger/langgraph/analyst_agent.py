@@ -6,6 +6,7 @@ import logging
 from llm import LLM
 from data_classes import AnalystOutput, LLMType
 from tools import google_search
+from langgraph.prebuilt import create_react_agent
 
 
 logging.basicConfig(level=logging.INFO) # Set the root logger level to INFO
@@ -17,7 +18,7 @@ class AnalystAgent():
         self.messages = []
         self.iterations = iterations
         self.system_prompt = system_prompt
-        
+       
         tools = [google_search, arxiv_search, think_tool]
         self.llm = LLM(llm_type=LLMType.OPEN_AI, structured_output_class=AnalystOutput, tools=tools)
 

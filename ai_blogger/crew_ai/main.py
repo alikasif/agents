@@ -16,7 +16,9 @@ def run():
     """
     inputs = {
         'topic': 'Evaluation of LLM and LLM based Applications',
-        'content': read_content()
+        'content': read_content(),
+        'file_path': './ai_blogger/crew_ai/output/outline.md',
+        'output_file': './ai_blogger/crew_ai/output/research.md'
     }
 
     # Create and run the crew

@@ -14,14 +14,29 @@ class BloggerCrew():
             tools=[SerperDevTool()],
         )
 
+
     @agent
-    def researcher(self) -> Agent:
+    def editor(self) -> Agent:
         return Agent(
-            config=self.agents_config['researcher'],
+            config=self.agents_config['editor'],
             verbose=True,
-            tools=[SerperDevTool()]
         )
 
+    @agent
+    def writer(self) -> Agent:
+        return Agent(
+            config=self.agents_config['writer'],
+            verbose=True,
+        )
+
+
+    # @agent
+    # def researcher(self) -> Agent:
+    #     return Agent(
+    #         config=self.agents_config['researcher'],
+    #         verbose=True,
+    #         tools=[SerperDevTool()]
+    #     )
 
     @task
     def analysis_task(self) -> Task:
@@ -30,10 +45,24 @@ class BloggerCrew():
         )
 
     @task
-    def research_task(self) -> Task:
+    def editor_task(self) -> Task:
         return Task(
-            config=self.tasks_config['research_task'],            
+            config=self.tasks_config['editor_task'],            
         )
+
+
+    @task
+    def writer_task(self) -> Task:
+        return Task(
+            config=self.tasks_config['writer_task'],            
+        )
+
+
+    # @task
+    # def research_task(self) -> Task:
+    #     return Task(
+    #         config=self.tasks_config['research_task'],            
+    #     )
 
 
     @crew

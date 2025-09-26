@@ -14,16 +14,38 @@ analysis_task:
   agent: analyst
   output_file: ai_blogger/crew_ai/output/outline.md
 
-research_task:
-  description: >    
-    1. You will get a list of topics and sub topic with metadata like whether it is a general or specific topic and whether it needs depth or breadth research.
-    2. You should do the research about every topic in the order provided and write it in a markdown file.
-    3. Your research must be factual and aligned to the topic provided.
-    4. Depth is important for technical topics.    
-    5. Make sure to organize your findings in a structured format with clear sections.
+
+editor_task:
+  description: >
+    1. Read the file: {file_path}    
+    2. For each topic in the file, call the sub agent.
+    3. Wait untill sub agent has finished the task before passing next topic in the loop.    
+    4. Dont add any topic or subtopic on your own. Do not call LLM.
   expected_output: >
-    A comprehensive research document with well-organized sections covering all the requested aspects of topic.
-  agent: researcher
-  context:
-    - analysis_task
+    Final status on each sub topic
+  agent: editor
+
+
+writer_task:
+  description: >
+    1. You will be called multiple times with an input. 
+    1. Write the passed input in the file.
+  expected_output: >
+    output file written with all the topics
+  agent: writer
   output_file: ai_blogger/crew_ai/output/research.md
+
+
+# research_task:
+#   description: >    
+#     1. Read the file: {file_path}
+#     2. Understand the topics and sub topics.
+#     3. Start a loop and do the deep research for each topic.
+#     5. Your research must be factual and aligned to the topic provided.
+#     6. Depth is important for technical topics.    
+#     7. Make sure to organize your findings in a structured format with clear sections.
+#     8. Append the research for each topic in the output file {output_file}
+#   expected_output: >
+#     A comprehensive research document with well-organized sections covering all the requested aspects of topic.
+#   agent: researcher
+#   output_file: ai_blogger/crew_ai/output/research.md
