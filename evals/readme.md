@@ -1,82 +1,92 @@
 
-# Evals — LLM & LLM-System Evaluation
+# Evals — Testing Semantic Kernel Workflows Using  Evaluations Frameworks
 
-This project holds notes, examples, and tools for evaluating LLM models and LLM-powered systems. The content here summarizes evaluation concepts, recommended metrics, methods (online/offline), tooling options, and practical guidance for building reliable evaluation pipelines.
+This folder contains materials and small utilities to evaluate and benchmark different evaluation frameworks against agent workflows and automation built using Microsoft's Semantic Kernel and related agent patterns in this repository.
 
-## Why Evals?
+Purpose
+-------
+The goal of `evals/` is to provide reproducible experiments, example prompts, transcripts, and helper scripts that let you compare evaluation frameworks and tooling when applied to:
 
-Evaluations ("Evals") are the structured tests and metrics that determine whether an LLM or LLM-powered application is production-ready. Evals measure not only raw model quality but also system-level behavior (retrieval, tool use, agent workflows) and user-facing outcomes.
+- multi-step agent workflows
+- tool-augmented LLM agents
+- automated orchestration built with Semantic Kernel primitives
 
-Key benefits:
-- Surface regressions and improvements during development
-- Measure real-world performance via online evaluation
-- Help prioritize fixes (hallucinations, tool errors, latency)
+This is not a single monolithic test runner. Instead it collects examples, transcripts, and lightweight harnesses you can use to measure quality, correctness, cost, and latency of agent behaviors across different evaluation approaches.
 
-## Levels of evaluation
+What you'll find here
+---------------------
 
-- Model (LLM) evaluation: measures the core language model's capability (e.g., fluency, coherence, accuracy)
-- System evaluation: measures end-to-end application behavior (retrieval quality, tool correctness, task completion)
+- data_classes.py — shared datatypes used by evaluation harnesses (if present)
+- semantic_store.py — small helpers for storing/retrieving transcripts and evaluation artifacts
+- simple_rag.py — minimal retrieval-augmented-generation example used in some experiments
+- readme.md — (this file) guidance and quickstart
+- data/ and transcripts/ — example input datasets, agent outputs, and transcripts used for evaluation
 
-## Offline vs Online Evaluation
+Design principles
+-----------------
 
-- Offline: run in a controlled environment using curated datasets and ground truth. Great for CI/CD and repeatable metrics (accuracy, BLEU, ROUGE).
-- Online: run against live traffic or shadow traffic to capture real user behavior (user satisfaction, success rate, real-world edge cases).
+1. Reproducible: keep experiments small, pinned, and easy to run locally.
+2. Compare apples-to-apples: provide the same prompts, seeds, and inputs across frameworks.
+3. Lightweight: avoid heavy infra dependencies; prefer small scripts and fixtures.
+4. Extensible: make it easy to add new evaluation metrics, frameworks, or experiments.
 
-## Recommended core metrics
+Quickstart
+----------
 
-Pick a small set of metrics (we recommend <=5) that are highly correlated with user success. Examples:
+1. Install dependencies for the repository (see top-level `requirements.txt` or `pyproject.toml`).
 
-- Answer Relevancy
-- Task Completion
-- Correctness / Faithfulness
-- Hallucination rate
-- Tool Correctness (for agentic systems)
-- Contextual Relevancy (for RAG)
-- Responsible metrics: toxicity, bias
+	- On a Python environment with pip:
 
-Quantitative metrics should be reliable, fast to compute, and interpretable.
+	  pip install -r requirements.txt
 
-## Evaluation methods and scorers
+2. Inspect the example transcripts and prompt files in this directory. Many experiments are self-contained and have instructions in nearby files.
 
-- Statistical scorers: BLEU, ROUGE, METEOR — limited for long-form or subjective outputs
-- Model-based scorers: BLEURT, G-Eval, Prometheus — use LLMs as judges for subjective judgments
-- Hybrid approaches: QAG (question-answer generation) for faithfulness, GPTScore, SelfCheckGPT for hallucination detection
+3. Run a simple example (if provided) from the project root. For example, to run the simple RAG example used in some evals:
 
-Practical tip: use model-based scorers for subjective criteria (style, helpfulness), and deterministic scorers for factual checks when possible.
+	python -m evals.simple_rag
 
-## LLM-as-a-judge & HITL
+	(Adjust the module path as needed depending on how you run Python in this workspace.)
 
-- LLM-as-a-judge can scale human-like evaluation but has biases (position bias, verbosity bias, self-affinity). Mitigate via few-shot prompting, position swapping, and hybrid human+LLM workflows.
-- Human-in-the-loop (HITL) remains the gold standard for nuanced or high-stakes domains (healthcare, finance).
+4. To add an evaluation, create a small harness that:
 
-## RAG & Agentic metrics (system-level)
+	- Takes a fixed input set / seed
+	- Runs the agent workflow (or replays a transcript)
+	- Produces structured outputs (JSONL recommended)
+	- Computes metrics or emits artifacts consumable by evaluation frameworks
 
-- RAG metrics: Faithfulness, Contextual Precision, Contextual Relevancy — measure how well retrieved context supports generated outputs
-- Agentic metrics: Tool Correctness, Task Completion — measure whether an agent selects and uses the right tools and completes the intended workflow
+Example evaluation checklist
+----------------------------
 
-## Benchmarks & tools
+- Reproducibility: fixed random seed, clear environment variables
+- Inputs: include CSV/JSON fixtures in `data/`
+- Outputs: write JSONL with one object per run, include metadata (prompt, model, timestamp)
+- Metrics: provide at least one automated metric (e.g., exact match, BLEU, or a domain-specific verifier)
+- Cost/latency: capture timing and token usage when available
 
-- Common benchmarks: MMLU, HumanEval, TruthfulQA, GLUE/SuperGLUE
-- Tools and frameworks: Giskard, DeepEval, MLFlow LLM Evaluate, RAGAs, Deepchecks, Arize, LLMBench, PromptFlow
+Adding a new framework
+----------------------
 
-## Building an evaluation pipeline — practical advice
+If you want to compare a new evaluation framework against the examples here:
 
-- Define a concise metric set (1-2 custom + 2-3 system/generic)
-- Keep metrics stable across model or system swaps
-- Instrument both offline and online evaluations
-- Cache results, version datasets and prompts, and track experiment metadata
-- Surface contradictions and confidence scores; route high-impact failures to HITL
+1. Add an adapter that converts the output JSONL from our harness into the framework's expected format.
+2. Add a small script under `evals/` that runs the adapter and invokes the framework on the exported artifacts.
+3. Commit the adapter and a README describing how to reproduce the comparison locally.
 
-## Limitations & bias mitigation
+Contributing
+------------
 
-- LLM-based evaluators may be stochastic and biased. Use position swapping, few-shot calibration, and hybrid evaluation to mitigate biases.
+Contributions are welcome. When adding experiments or adapters:
 
-## Next steps (starter tasks)
+- Keep experiments minimal and well-documented.
+- Add small datasets (or pointers) and expected outputs.
+- Document exact steps to reproduce and the software versions used.
 
-1. Create a small evaluation harness that runs: QAG for faithfulness, a model-based G-Eval scorer for helpfulness, and a toxicity/bias pass.
-2. Add an online telemetry pipeline to capture user satisfaction and success rates.
-3. Integrate a lightweight HITL review workflow for high-impact failures.
-4. Explore open-source tools (Giskard, DeepEval) and run on sample datasets.
+Acknowledgements
+----------------
 
----
+This repository experiments with Semantic Kernel-based automation and agentic patterns. The `evals/` folder aims to be a neutral place to compare external evaluation tooling on top of those workflows.
 
+License
+-------
+
+See the repository root `LICENSE` for licensing details.

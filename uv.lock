@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.12"
 resolution-markers = [
     "python_full_version >= '3.13'",
@@ -249,7 +249,7 @@ requires-dist = [
     { name = "autogen-core", specifier = "==0.6.1" },
     { name = "autogen-ext", extras = ["grpc", "mcp", "ollama", "openai"], specifier = "==0.6.1" },
     { name = "av", specifier = "==14.4.0" },
-    { name = "azure-ai-agents", specifier = "==1.0.1" },
+    { name = "azure-ai-agents", specifier = "==1.2.0b3" },
     { name = "azure-ai-projects", specifier = "==1.0.0b11" },
     { name = "azure-core", specifier = "==1.34.0" },
     { name = "azure-identity", specifier = "==1.23.0" },
@@ -405,7 +405,7 @@ requires-dist = [
     { name = "ruff", specifier = "==0.11.13" },
     { name = "safehttpx", specifier = "==0.1.6" },
     { name = "scipy", specifier = "==1.15.3" },
-    { name = "semantic-kernel", specifier = "==1.32.2" },
+    { name = "semantic-kernel", specifier = "==1.34.0" },
     { name = "semantic-version", specifier = "==2.10.0" },
     { name = "sendgrid", specifier = "==6.12.3" },
     { name = "setuptools", specifier = "==80.9.0" },
@@ -788,16 +788,16 @@ wheels = [
 
 [[package]]
 name = "azure-ai-agents"
-version = "1.0.1"
+version = "1.2.0b3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "azure-core" },
     { name = "isodate" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/13/ec/f9ad7e651ede0a1de61e8f45510f3a8fd6c1297e4e65375aa1197f0e5e1e/azure_ai_agents-1.0.1.tar.gz", hash = "sha256:71da960f2441531a9ae1a163fff1279b08c6f9ce04748a2cf52a3b220166ae8d", size = 298380, upload-time = "2025-06-09T17:12:34Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/72/52/3c1af9ed86582f09343f135d527ca26f0bf9659c01ccbddb650bbb952963/azure_ai_agents-1.2.0b3.tar.gz", hash = "sha256:440d7fca98c0b13654a57dcd159cdf64d1024f9baacd1a4354ce91a290d3741e", size = 362563, upload-time = "2025-08-22T22:41:58.609Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/6f/c9/7e310ed1348c30653693b1789db51f63f58e2e88166b90aee96ac396f89e/azure_ai_agents-1.0.1-py3-none-any.whl", hash = "sha256:f3f4e68e18ffafbe4b30e91fa8931e427fdca42b90be6c32928d4f763ad0e3e7", size = 187279, upload-time = "2025-06-09T17:12:35.729Z" },
+    { url = "https://files.pythonhosted.org/packages/99/a4/c916745e150b5e157688da9a7965d62efb82ad940f2991260d1d2b79fcf1/azure_ai_agents-1.2.0b3-py3-none-any.whl", hash = "sha256:fec3e92fac5de2c18dee2d4def734825c2a4880bee39b3c237a7ad8079bfa8a7", size = 208129, upload-time = "2025-08-22T22:42:00.249Z" },
 ]
 
 [[package]]
@@ -3609,7 +3609,7 @@ wheels = [
 
 [[package]]
 name = "semantic-kernel"
-version = "1.32.2"
+version = "1.34.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
@@ -3635,9 +3635,9 @@ dependencies = [
     { name = "typing-extensions" },
     { name = "websockets" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/c9/e9/73c606e1808d5be5ee9b601e0a567a94d2e239e919348bc02c59dcf876dc/semantic_kernel-1.32.2.tar.gz", hash = "sha256:57fbdf8380057356b2c8890e54ead94b52eb668d3c34fd75f11e33dee8b0584a", size = 573583, upload-time = "2025-06-04T23:46:05.181Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/c5/15/9a4b74fa46beb39a8e66452a6f63a03b1bd701d0eaac4c0eb66db1c51c00/semantic_kernel-1.34.0.tar.gz", hash = "sha256:c656272bcadd6cc3fee6da32de65b48d597d7ab2d5bb4097d4414136b3b5556f", size = 562090, upload-time = "2025-06-25T00:31:22.421Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/47/3b/54d0f49363eb3ed2c3ceb068acce2ca4c8c01d4dec68470cd455cbc5180e/semantic_kernel-1.32.2-py3-none-any.whl", hash = "sha256:b887eaab14d6fa0a40ad1904cf5729e3bbc5e0720e766ed7c30ee043a44e0ab3", size = 924041, upload-time = "2025-06-04T23:46:07.426Z" },
+    { url = "https://files.pythonhosted.org/packages/aa/63/f1e7b470aff5947e84ce8c954194e9d96595a9a264375ed4fc957cd685b5/semantic_kernel-1.34.0-py3-none-any.whl", hash = "sha256:c5a6b5a494495421e008a7ece860fd4507557ac83498744d9f2332322fbbc8e3", size = 873179, upload-time = "2025-06-25T00:31:24.443Z" },
 ]
 
 [[package]]

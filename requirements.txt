@@ -50,11 +50,11 @@ autogen-ext==0.6.1
     # via agents (pyproject.toml)
 av==14.4.0
     # via aiortc
-azure-ai-agents==1.0.1
+azure-ai-agents==1.2.0b3
     # via
     #   azure-ai-projects
     #   semantic-kernel
-azure-ai-projects==1.0.0b11
+azure-ai-projects==1.0.0b12
     # via semantic-kernel
 azure-core==1.34.0
     # via
@@ -425,7 +425,7 @@ pybars4==0.9.13
     # via semantic-kernel
 pycparser==2.22
     # via cffi
-pydantic==2.11.5
+pydantic==2.11.7
     # via
     #   anthropic
     #   autogen-core
@@ -445,7 +445,7 @@ pydantic==2.11.5
     #   semantic-kernel
 pydantic-core==2.33.2
     # via pydantic
-pydantic-settings==2.9.1
+pydantic-settings==2.10.1
     # via
     #   langchain-community
     #   mcp
@@ -475,7 +475,7 @@ pypdf2==3.0.1
     # via agents (pyproject.toml)
 python-dateutil==2.9.0.post0
     # via pandas
-python-dotenv==1.1.0
+python-dotenv==1.1.1
     # via
     #   agents (pyproject.toml)
     #   mcp
@@ -543,7 +543,7 @@ safehttpx==0.1.6
     # via gradio
 scipy==1.15.3
     # via semantic-kernel
-semantic-kernel==1.32.2
+semantic-kernel==1.34.0
     # via agents (pyproject.toml)
 semantic-version==2.10.0
     # via gradio
@@ -707,3 +707,6 @@ ag2[openai]==0.9.9
 pytest==8.4.2
 crewai==0.193.2
 crewai-tools==0.73.1
+deepeval==3.5.9
+chromadb==0.5.23
+langchain-docling==1.1.0
