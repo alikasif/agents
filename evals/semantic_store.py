@@ -1,40 +1,34 @@
-import semantic_kernel as sk
-from semantic_kernel.connectors.ai.open_ai import OpenAITextEmbedding
-
-from semantic_kernel.connectors.in_memory import InMemoryStore
-from semantic_kernel.connectors.in_memory import InMemoryCollection
-
-from semantic_kernel.exceptions.kernel_exceptions import KernelException
+import chromadb
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 import os
-from data_classes import DataModel
-import asyncio
-from dotenv import load_dotenv
 from langchain_community.document_loaders import PyPDFLoader
+from chromadb.utils.embedding_functions.openai_embedding_function import OpenAIEmbeddingFunction
 
 class SemanticStore:
 
+    _instance = None  # Class-level variable to hold the single instance
+
+    def __new__(cls):
+        if cls._instance is None:
+            # If no instance exists, create a new one using the parent's __new__
+            cls._instance = super(SemanticStore, cls).__new__(cls)
+            cls._instance._initialized = False
+        return cls._instance
+
+
     def __init__(self):
 
-        # Initialize the Kernel
-        api_key = os.getenv("OPENAI_API_KEY")
-        embedding_model_id = os.getenv("OPENAI_EMBEDDING_MODEL")      
-        self.kernel = sk.Kernel()
-
-        # Configure the embedding service
-        self.kernel.add_service(
-            OpenAITextEmbedding(embedding_model_id, api_key)
-        )
-
-        self.collection_name = "collection_name"
+        if(self._initialized):
+            return
         
-        #self.vector_collection = InMemoryStore.get_collection(self.collection_name, record_type=DataModel)
 
-        self.vector_collection = InMemoryCollection(
-            collection_name=self.collection_name,
-            record_type=DataModel,
-            embedding_generator=OpenAITextEmbedding(ai_model_id=embedding_model_id)  # Optional, if there is no embedding generator set on the record type
-        )
+        self.client = chromadb.EphemeralClient()
+        self.collection = self.client.create_collection(name="my_collection", 
+                                                        embedding_function=OpenAIEmbeddingFunction(
+                                                        api_key=os.getenv("OPENAI_API_KEY"),
+                                                        model_name=os.getenv("OPENAI_EMBEDDING_MODEL"))
+                    )
+        self._initialized = True
 
 
     def split_doc(self, doc_path: str) -> list[str]:
@@ -48,36 +42,37 @@ class SemanticStore:
         return texts
 
 
-    def generate_embeddings(self, texts: list[str]) -> list[list[float]]:
+    def store_documents(self, doc_path: str):
+        texts = self.split_doc(doc_path)
+        ids = [f"doc_{i}" for i in range(len(texts))]
+        metadatas = [{"source": doc_path} for _ in texts]
+        self.collection.add(
+            documents=texts,
+            metadatas=metadatas,
+            ids=ids
+        )
+        print(f"Stored {len(texts)} documents from {doc_path}.")
 
-        # Generate embeddings for the provided texts
-        embedding_generator = self.kernel.get_service(type=OpenAITextEmbedding)
-        return asyncio.run(embedding_generator.generate_embeddings(texts))
 
+    def query(self, query_text: str, n_results: int = 5):
+        results = self.collection.query(
+            query_texts=[query_text],
+            n_results=n_results
+        )
 
-    def store_embeddings(self, doc_path):
-        splits = self.split_doc(doc_path)
+        result = results['documents']        
+
         
-        embeddings = self.generate_embeddings(splits)
+        final_result = ""
+        for i in range(len(result[0])):
+            final_result += (result[0][i].replace("\n", " "))
 
-        for i, split in enumerate(splits):
-            data_model = DataModel(id=str(i), content=split)
-            asyncio.run(self.vector_collection.upsert(data_model))
+        return final_result
+
     
-
-    def query(self, query_text: str, top_k: int = 2):
-        try:
-            results = asyncio.run(self.vector_collection.search(query_text, top=top_k))
-            return results
-        except KernelException as e:
-            print(f"Error during query: {e}")
-            return []
-
-
-if __name__ == "__main__":
-    load_dotenv(override=True)
-    store = SemanticStore()
-    store.store_embeddings("evals\\data\\Chapter_2_Routing.pdf")
-    results = store.query("What is LLM based routing?")
-    for result in results:
-        print(f"ID: {result.record.id}, Content: {result.record.content}, Score: {result.score}")
+# if __name__ == "__main__":
+#     load_dotenv(override=True)
+#     store = SemanticStore()
+#     store.store_documents("evals\\data\\Chapter_2_Routing.pdf")
+#     results = store.query("What is LLM based routing?")
+    
