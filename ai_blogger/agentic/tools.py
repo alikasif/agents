@@ -3,11 +3,42 @@ import time
 from langchain_community.utilities import GoogleSerperAPIWrapper
 from langchain_core.tools import tool
 from agents import function_tool
+from langchain_tavily import TavilySearch
+from dotenv import load_dotenv
 
 import logging
 
 logging.basicConfig(level=logging.INFO) # Set the root logger level to INFO
 
+def tavily_google_search(query: str) -> str:
+    """
+    This tool searches the internet for the query that is being passed.
+    This tool can be used for gathering the latest information about the topic.
+    This tool uses Google's Search, and returns the context based on the top results obtained.
+
+    Args:
+        query: A single search query to execute
+
+
+    Returns:
+        a complete combined context 
+    """
+    tool = TavilySearch(
+            max_results=5,
+            topic="general",
+            # include_answer=False,
+            # include_raw_content=False,
+            # include_images=False,
+            # include_image_descriptions=False,
+            # search_depth="basic",
+            # time_range="day",
+            # start_date=None,
+            # end_date=None,
+            # include_domains=None,
+            # exclude_domains=None
+        )
+    results = tool.invoke({"query": query})
+    print(results)
 
 @function_tool
 def google_search(query:str) -> str:
@@ -88,3 +119,7 @@ def think_tool(reflection: str) -> str:
         Confirmation that reflection was recorded for decision-making
     """
     return f"Reflection recorded: {reflection}"
+
+
+# load_dotenv(override=True)
+# tavily_google_search("what is US shutdown?")

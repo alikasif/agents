@@ -30,26 +30,44 @@ def research(topic_to_research: Topic):
     return response
 
 
-def blog(detailed_research = str):
+def blog(blog_name: str, detailed_research: str):
 
     response = asyncio.run(BloggerAgent().run(detailed_research))
     
-    with open(".\\ai_blogger\\agentic\\blogs\\blog.md", "a") as file_object:
+    with open(f".\\ai_blogger\\agentic\\blogs\\{blog_name}.md", "a") as file_object:
         # Write the new content to the file
         file_object.write(str(response))
         file_object.write("\n\n")
     
 
+def edit(blog_name: str, blog: str):
+    editor_agent = EditorAgent()
+    if not editor_agent:
+        print("EditorAgent not initialized properly.")
+        return
+    
+    response = asyncio.run(EditorAgent().run(blog))
+    
+    with open(f".\\ai_blogger\\agentic\\blogs\\{blog_name}_edited.md", "a") as file_object:
+        # Write the new content to the file
+        file_object.write(str(response))
+        file_object.write("\n\n")
+
 
 def read_topic():
     """Read the topic.txt file and return its content as a string."""
-    with open("./ai_blogger/topic.txt", "r", encoding="utf-8") as f:
+    with open("./ai_blogger/rag_topic.txt", "r", encoding="utf-8") as f:
+        return f.read()
+
+def read_blog(blog_name: str):
+    """Read the specified blog markdown file and return its content as a string."""
+    with open(f"./ai_blogger/agentic/blogs/{blog_name}.md", "r", encoding="utf-8") as f:
         return f.read()
 
 
 load_dotenv(override=True)
 
-goal= "Evaluating LLM Applications. common metrics, how to choose metrics, scorers, why to do evals? what to do in evals? tools for evals. eval benchmarks, metrics to asses rag, agents & llm applications"
+goal= "RAG and its different implementations and how it stands against long context models"
 user_input = read_topic()
 
 response = analysis(goal, user_input)
@@ -64,6 +82,7 @@ for topic in response.topics:
 
     detailed_research = research(topic)
 
-    blog(detailed_research.research)
+    blog("rag", detailed_research.research)
 
-
+content = read_blog("rag")
+edit("rag", content)
