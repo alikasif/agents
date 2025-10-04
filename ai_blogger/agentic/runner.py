@@ -67,22 +67,22 @@ def read_blog(blog_name: str):
 
 load_dotenv(override=True)
 
-goal= "RAG and its different implementations and how it stands against long context models"
-user_input = read_topic()
+# goal= "RAG and its different implementations and how it stands against long context models"
+# user_input = read_topic()
 
-response = analysis(goal, user_input)
+# response = analysis(goal, user_input)
 
-shall_continue = input("Do you want to continue with research and blog writing? (yes/no): ").strip().lower()
-if shall_continue not in ['yes', 'y']:
-    print("Exiting the program.")
-    exit(0)
+# shall_continue = input("Do you want to continue with research and blog writing? (yes/no): ").strip().lower()
+# if shall_continue not in ['yes', 'y']:
+#     print("Exiting the program.")
+#     exit(0)
 
-for topic in response.topics:
-    print(f"\ntopic: {topic.topic}")
+# for topic in response.topics:
+#     print(f"\ntopic: {topic.topic}")
 
-    detailed_research = research(topic)
+#     detailed_research = research(topic)
 
-    blog("rag", detailed_research.research)
+#     blog("rag", detailed_research.research)
 
 content = read_blog("rag")
 edit("rag", content)

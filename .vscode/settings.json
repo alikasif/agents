@@ -1,3 +1,7 @@
 {
-    "CodeGPT.apiKey": "CodeGPT Plus Beta"
+    "CodeGPT.apiKey": "CodeGPT Plus Beta",
+    "python-envs.pythonProjects": [],
+    "python.analysis.extraPaths": ["${workspaceFolder}"],
+    "python.pythonPath": "D:\\GitHub\\agents\\.venv\\Scripts\\python.exe"
 }
+
