@@ -8,9 +8,9 @@ from langgraph.graph import StateGraph, START, END
 from langchain_core.messages import SystemMessage, HumanMessage
 from langchain_core.prompts import ChatPromptTemplate
 
-from rag.agentic.data_classes import RagState, Grade, PlannedQueries, SubQuestionState
+from rag.agentic.utils.data_classes import RagState, Grade, PlannedQueries, SubQuestionState
 from langchain.chat_models import init_chat_model
-from rag.agentic.prompt import *
+from rag.agentic.utils.prompt import *
 from rag.knowledge_sources.abstract_datasource import AbstractDataSource
 from rag.knowledge_sources.vector_db import VectorDBSource
 from rag.knowledge_sources.llm_source import LLMSource

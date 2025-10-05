@@ -18,10 +18,8 @@ class RagState(TypedDict):
     question_rewrite_count: int = 0
     selected_datasource: str
     sub_questions_dict: Dict[str, SubQuestionState]
-    
-    sub_questions: List[str]
-    query_to_datasource_map: dict
-    query_to_retreived_docs_map: dict
+    hallucination_grade: str = "no"
+    hallucination_check_count: int = 0
 
 
 class Grade(BaseModel):

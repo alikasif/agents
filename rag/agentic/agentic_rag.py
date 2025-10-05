@@ -14,9 +14,9 @@ from langchain_experimental.text_splitter import SemanticChunker
 from langchain_openai.embeddings import OpenAIEmbeddings
 from langchain_community.document_loaders import PyMuPDFLoader
 from chromadb.utils import embedding_functions
-from data_classes import RagState, Grade
+from rag.agentic.utils.data_classes import RagState, Grade
 from langchain.chat_models import init_chat_model
-from prompt import *
+from rag.agentic.utils.prompt import *
 
 
 class AgenticRag:

@@ -1,5 +1,5 @@
 
-GRADE_PROMPT = (
+RETREIVAL_GRADE_PROMPT = (
     "You are a grader assessing relevance of a retrieved document to a user question. \n "
     "Here is the retrieved document: \n\n {context} \n\n"
     "Here is the user question: {question} \n"
@@ -39,3 +39,10 @@ QUERY_PLANNING_PROMPT = (
     "If the question is already simple, just return the original question as the only sub-question. \n"
     "Here is the user question: {question} \n"
 )
+
+
+HALLUCINATION_GRADE_PROMPT = """
+    You are a grader assessing whether an LLM generation is grounded in / supported by a set of retrieved facts. 'Yes' means that the answer is grounded in / supported by the set of facts.\n 
+    Give a binary score 'yes' or 'no'.
+    """
+
