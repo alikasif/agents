@@ -85,7 +85,7 @@ class SingleRoutingAgentRAG:
         
         relevant_docs = []
         for doc in docs:
-            prompt  = GRADE_PROMPT.format(question=state["query"], context=doc)
+            prompt  = RETREIVAL_GRADE_PROMPT.format(question=state["query"], context=doc)
             response = self.grading_model.invoke(
                  [{"role": "user", "content": prompt}]
             )

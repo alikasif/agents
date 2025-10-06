@@ -99,7 +99,7 @@ class AgenticRag:
         
         relevant_docs = []
         for doc in docs:
-            prompt  = GRADE_PROMPT.format(question=state["query"], context=doc.page_content)
+            prompt  = RETREIVAL_GRADE_PROMPT.format(question=state["query"], context=doc.page_content)
             response = self.grading_model.invoke(
                  [{"role": "user", "content": prompt}]
             )

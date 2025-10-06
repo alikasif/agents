@@ -110,7 +110,7 @@ class QueryPlannerRAG:
             logging.info(f"Grading responses for query {query}")
             relevant_docs = []
             for doc in state["retreived_docs"]:
-                prompt  = GRADE_PROMPT.format(question=query, context=doc)
+                prompt  = RETREIVAL_GRADE_PROMPT.format(question=query, context=doc)
                 response = self.grading_model.invoke(
                     [{"role": "user", "content": prompt}]
                 )            
