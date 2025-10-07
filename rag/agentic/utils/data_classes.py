@@ -20,7 +20,7 @@ class RagState(TypedDict):
     sub_questions_dict: Dict[str, SubQuestionState]
     hallucination_grade: str = "no"
     hallucination_check_count: int = 0
-    hyde_retreival = str
+    hyde_retreival: str
 
 
 class Grade(BaseModel):

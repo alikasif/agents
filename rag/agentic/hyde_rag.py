@@ -90,7 +90,8 @@ class HydeRag:
         hypothetical_answer = hyde_chain.invoke({})
 
         print(f"\n\nHypothetical Answer: {hypothetical_answer.content}\n\n")
-        return {"hyde_retreival": hypothetical_answer.content}
+        #print(f"state: {state}\n\n")
+        return {"hyde_retreival": str(hypothetical_answer.content)}
 
 
     def search(self, state: RagState):
@@ -107,7 +108,7 @@ class HydeRag:
         """Call the LLM with system prompt, contexts and user query and return the assistant reply."""
         # Build a simple prompt where we pass context first
 
-        contexts = state["graded_docs"]
+        contexts = state["retreived_docs"]
         context_text = "\n\n--- Retrieved Context ---\n\n" + "\n\n".join([d.page_content for d in contexts])
 
         print(f"\n\ncontext_text: {context_text}\n\n")
