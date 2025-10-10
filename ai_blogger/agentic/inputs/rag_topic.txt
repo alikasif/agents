@@ -1,0 +1,19 @@
+Improvements beyond Naive or Frozen RAG
+
+1. Routing the query to the most relevant datasource
+2. Retrieving from multiple sources
+3. Retreival grading to select only the relevant documents from single or multiple datasources
+4. Query re-writing for better retreival
+5. Breaking complex query into multiple queries, retreive and rank across them
+6. grading the response for relevancy and hallucinations
+7. Hybrid search. Combines keyword-based search (like BM25) with semantic vector search to leverage the strengths of both approaches. 
+8. Agentic RAG with multi step reasoning, planing and information retreival
+9. Use LLm as a judge pattern to self critic and re-retreive for more relevant answers
+
+Few of the Advance RAG techniques
+
+1. HyDE (Hypothetical Document Embeddings) RAG
+2. HyPE (Hypothetical Prompt Embeddings) RAG
+2. Embedding free RAG
+3. Order preserving RAG (OP-RAG)
+4. RAG2.0

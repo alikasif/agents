@@ -1,0 +1,311 @@
+
+Advanced technique in RAG
+
+
+    How OP-RAG works
+
+    Let's dive into how OP-RAG works. Imagine you have a long document, referred to as 'd'. It is then cut into several sections or 'chunks', making sure each one is sliced in a consistent, sequential order. We label these chunks as c1, c2, and so on, right up to cn, where 'n' represents the total number of chunks.
+
+    When someone submits a query, like 'q', we need to identify which chunks are most relevant. This is done by using cosine similarity, which measures how closely the content of each chunk relates to the query. This gives us a score, si, for each chunk, indicating its relevance to the query.
+
+    The next step is where OP-RAG stands out. The top chunks are picked based on their relevance scores, but instead of rearranging them by these scores, we keep them in the order they appear in the document. This means if chunk c5 is originally before c7 in the document, it will stay that way in our lineup, regardless of their individual relevance scores.
+
+    This method differs from traditional RAG, where chunks are ordered solely by relevance, possibly disrupting the natural flow of information. By keeping the original sequence, OP-RAG helps maintain the logical progression of the text, which is essential for producing coherent and accurate responses.
+
+
+    Advanced techniques to improve RAG.
+
+    Some of the more successfully adopted techniques to continuously improve accuracy of Naive RAG systems are the following:
+
+        Query Alteration - there are few techniques that can be employed:
+        Query rewriting - ask LLM to rewrite original query to better fit the retrieval process. It can be rewritten in multiple ways. E.g. fixing grammar, simplifying the query to keep short succinct statements.
+        Query Expansion - ask LLM to rewrite the query multiple times to create multiple variations of it. Then, run retrieval process multiple times to retrieve more, potentially relevant, context.
+        Reranking - rerank the originally retrieved documents using heavier process compared to regular contextual search. Usually, this involves using a larger model and retrieving considerably more documents than needed during the retrieval phase. Reranking also works well with Query Expansion pattern from previous point as it return more data than usual. The overall process is similar to what we are used to seeing in Recommendation Engines.
+
+
+    RAG Vs Long Context LLM
+    Despite the impressive capabilities of long-context LLMs, there are inherent limitations to processing extremely large amounts of text in a single pass. As the context window expands, the model’s ability to focus on relevant information can diminish, potentially leading to a degradation in answer quality. This phenomenon highlights a critical trade-off between the breadth of available information and the precision of the model’s output.
+
+
+    OP-RAG is a technique that improves the quality of RAG in long-context question-answer applications. With OP-RAG, as the number of retrieved chunks increases, the answer quality initially rises, and then declines, forming an inverted U-shaped curve.
+
+    At certain points, OP-RAG achieves higher quality results with much less tokens than long-context LLMs. Experiments on public benchmarks showed the superiority of OP-RAG, which we'll examine soon.
+
+
+    Long Context RAG Perf
+
+    The performance analysis of Retrieval Augmented Generation (RAG) when utilizing long context lengths reveals that longer context models and RAG are synergistic, enabling RAG systems to effectively include more relevant documents. However, this improvement is not uniform across all models and context sizes, and many models exhibit significant performance limitations as context length increases.
+
+    The study, which ran over 2,000 experiments on 13 LLMs, found the following key outcomes regarding long context RAG performance:
+    1. Benefits of Increased Context Length
+
+        Increased Retrieval Success: Retrieving more documents increases the likelihood that the right information is passed to the Large Language Model (LLM). Modern LLMs with long context lengths can take advantage of this to improve the overall RAG system quality.
+        Recall Saturation: Experiments showed that the retrieval recall score (the upper bound on generation performance) increased significantly with context length. For datasets like Databricks DocsQA, HotPotQA, and FinanceBench, retrieval recall did not saturate until context lengths reached 96k or 128k tokens. This demonstrates that increased context size offers the promise of capturing additional information to increase system quality.
+        Initial Performance Boost: There was an observable increase in performance across all models when context length increased from 2k to 4k tokens, and this increase persisted for many models up to 16k to 32k context length.
+
+    2. Limitations and Performance Saturation
+
+    While longer context provides benefits, the study found that using longer context does not uniformly increase RAG performance.
+
+        Saturation Point: For most models, performance decreases after a certain saturation point. Examples include:
+        GPT-4-turbo and Claude-3-sonnet starting to decrease performance after 16k tokens.
+        Mixtral-instruct performance decreasing after 4k tokens.
+        DBRX-instruct performance decreasing after 8k tokens.
+        Llama-3.1-405b performance starting to decrease after 32k tokens.
+        GPT-4-0125-preview starting to decrease after 64k tokens.
+        Effective Context Length: The effective context length—the amount of usable context length beyond which model performance begins to decrease—can be much shorter than the maximum context length claimed by the model developers.
+        Top Performers: A few recent models showed improved long context behavior with little to no performance deterioration as context length increased. These models include gpt-4o, claude-3.5-sonnet, and gpt-4o-mini. The gpt-4o-2024-05-13 model, for instance, had the highest overall average performance across all context lengths tested (0.709).
+        Developer Consideration: Developers must be mindful in selecting the optimal number of documents (and thus context size), as this choice likely depends on both the generation model being used and the specific task at hand.
+
+    3. Distinct Failure Modes at Long Context
+
+    Models fail in highly distinct ways, particularly noticeable after certain context lengths. These behaviors suggest a lack of sufficient long context post-training.
+
+    Model CategoryExample ModelPrimary Failure ModeDetails/ObservationsCommercialGPT-4Providing the wrong answerAlso occasionally produces irrelevant or random content.CommercialClaude-3-sonnetFailing to follow instructions (often refusing due to copyright concerns)The refusal rate due to copyright increased drastically with context length (e.g., from 3.7% at 16k tokens to 49.5% at 64k tokens).Open SourceLlama-3.1-405b-instructProviding the wrong answerRarely generated repeated or random content, showing good instruction following performance, similar to GPT-4.Open SourceMixtral-instructOutputting repeated content or random content (e.g., repeating the Chinese word for "dream")
+
+    Open SourceDBRX-instructFailing to follow instructions by summarizing the context instead of answering the questionThe failure to follow instructions for DBRX increased sharply with context length (e.g., from 5.2% at 8k to 50.4% at 32k).
+
+
+
+Embedding free RAG
+
+    the ‘vector DB + embeddings’ method is associated with significant overhead in cost, complexity, and performance. With these challenges in mind, there has been increasing 
+    interest in exploring alternatives to embedding-based RAG. Researchers have begun to develop RAG without embedding methods and systems, avoiding vector search. In this article,
+    we define what embedding-free RAG means, explore the reasons for its current emergence, and compare it to traditional vector database approaches.
+
+    Limitations of Embeddings & Vector Search:
+        Despite its popularity, the vector-based RAG approach has notable shortcomings. Let’s consider some of them:
+
+        Semantic Gaps
+        Semantic gaps with embeddings/vector search are common. This is because dense vector similarity may capture topical relatedness but not necessarily answer relevance. They can return semantically similar but unrelated passages as well, especially when the answer’s precision (exact numbers/dates/negation) matters. Embeddings can also struggle with domain-specific terms, rare entities, or multi-hop questions linking several documents.
+
+        Retrieval Accuracy
+        The above issue can lead to poor retrieval accuracy in real-world RAG deployments. When the embedding model fails to capture the relationship between a question and its answer, top vector hits may not contain the answer. Some reports indicate that RAG pipelines often struggle to retrieve the correct supporting text. One practitioner noted that even after optimizing the ‘Chunking + Embedding + Vector Store’ pipeline, the accuracy for retrieving the correct chunks is ‘usually below 60%.’ RAG systems may provide incorrect or incomplete answers due to irrelevant context.
+
+        Lack of Interpretability and Control
+        With vector embeddings, it becomes hard to know why you missed an answer or retrieved a wrong passage, because we can’t easily say what the vectors “thought.” The retrieval is a black-box process. Adjusting the retrieval behavior (for example, to emphasize certain keywords or data fields) is challenging when using a purely learned embedding.
+
+        Infrastructure Complexity and Cost
+        There are offline costs (the time and compute required to generate embeddings for thousands of documents - GPUs are often used for this) and online costs (running a vector DB service, which can be memory-intensive). It may be really expensive for teams without specialized infrastructure. There’s also the maintenance cost of the index itself (recomputing new embeddings when your data updates).
+
+        Traditional vector database RAG carried us a long way, empowering semantic search for LLMs. However, its limitations have also inspired researchers to look beyond vector databases for retrieval augmentation.
+
+    What Is RAG Without Embeddings?
+    RAG without embeddings refers to any RAG architecture that doesn’t use vector embeddings as the main approach for retrieving relevant context for generation. It omits the usual “embed query and documents, then do vector nearest-neighbor search” step.
+
+    How can we retrieve relevant information without embeddings? There are a few emerging approaches:
+
+    Lexical or Keyword-Based Retrieval
+    One of the most “embedding-free” implementations of RAG would be to fall back to lexical keyword search (or sparse retrieval).
+
+    Instead of comparing continuous vectors, the system searches for overlapping keywords/tokens shared between the query and documents (using algorithms like BM25). In fact, this “old school” sparse keyword method often exhibits competitive performance, performing on par with (fancy) vectors in many cases.
+
+    This classic keyword method is still competitive with other approaches. For example, one XetHub benchmark showed BM25 to be “not much worse” than state-of-the-art OpenAI embeddings. According to that researcher, achieving an 85% recall of relevant documents might require 7 results returned from an embedding and vector search, compared to 8 results from the classical keyword approach. This small difference in accuracy “is insignificant, considering the cost of maintaining a vector database as well as an embedding service.”
+
+    In other words, a well-tuned keyword search might be able to get you part of the way there, without all the overhead of running a vector DB.
+
+    You can implement this by generating an optimized search query from the user prompt (possibly with the help of an LLM to extract important terms) and performing a query against a full-text engine (Elasticsearch or an SQL full-text index, etc.).
+
+
+    The LLM can then operate on those retrieved texts as context. This can use the strong precision signal of lexical matches (high confidence that the retrieved docs contain the query terms or near-synonyms), which can sometimes be more relevant than a dense embedding’s retrieval.
+
+    LLM-based Iterative Search (Reasoning as Retrieval)
+    Another approach to embedding-free RAG is to leverage the LLM itself to do retrieval via reasoning and inference. Rather than ranking vector similarity scores, this type of system instead “asks the LLM” to figure out where the answer is located. For example, an LLM agent could be provided with a list of document titles or summaries, and asked to reason about which document is most likely to contain the answer (and then fetch it).
+
+    That’s the concept behind Agent-based RAG – an LLM agent “uses” tools to search a document catalog by title/metadata before detailed analysis.
+
+    Similarly, there is a research framework, ELITE (Embedding-Less Retrieval with Iterative Text Exploration), that provides the LLM the capability to iteratively narrow down on relevant text. It uses a custom importance measure to guide the search.
+
+
+    The above diagram represents an embedding-free RAG loop. The user query is sent to an LLM, which produces clues for retrieving a snippet from the corpus. That snippet is then scored by an importance measure to decide which window to focus on next. That new, more targeted focus is then fed back to the LLM in a loop that iterates until the stop check condition is met, and the system returns the final answer.
+
+    This approach “asks” the model to perform the retrieval via its native language understanding and logical reasoning. It does not “delegate” retrieval to an embedding index.
+
+    Structured Knowledge and Graph-Based Retrieval
+    Instead of adding the knowledge base as unstructured chunks of text to a vector index, this approach structures the data in a knowledge graph or other symbolic data structure.
+
+    In a graph-based RAG, entities (such as people, places, or concepts) are represented as nodes and relationships are represented as edges, extracted from the source text or database. In response to the user’s query, the system retrieves relevant nodes and follows edges to gather a set of facts or related pieces of information, which is then passed to the LLM.
+
+    Microsoft recently released GraphRAG, which “keeps the good bits of RAG but slips a knowledge graph between the indexer and the retriever”.
+
+
+    In GraphRAG, instead of simply returning “chunks that look similar” to the query, the system returns a subgraph of relevant entities and relationships. It provides the LLM with a structured memory palace of how facts connect.
+
+    This is especially valuable for complex queries that require multi-hop reasoning or fact joins (e.g., recognizing that Person A who did X is related to Person B mentioned elsewhere).
+
+    Some implementations of GraphRAG still involve embeddings at certain points in the pipeline (e.g., embedding the text of each node’s context for similarity search within the neighborhood). However, the point is that a graph imposes a symbolic relational structure that is lacking in pure vector search.
+
+    Prompt-Based Retrieval (Embedding-Free Prompt RAG)
+    Another recent thread of research has explored whether we can use the LLM’s prompting ability to perform text retrieval without explicit vectors. One such approach is Prompt-RAG, proposed in a 2024 paper in the specific domain of Korean medicine.
+
+    Instead of vector indexes, Prompt-RAG constructs a structured Table-of-Contents(ToC) from the documents. It then prompts the LLM to choose the sections (headings) that are relevant to the query.
+
+
+    The contents under those headings are then combined as context. The LLM is directly used to parse the query and the document structure and perform a retrieval decision. There are no embedding vectors required. It was shown to outperform a traditional embedding-based RAG in that particular domain. This suggests that prompt-guided retrieval can be a good alternative when embeddings don’t capture the domain’s semantics. RAG without embeddings replaces the vector search step with either classic information retrieval techniques or LLM-powered logic. It’s a sort of inversion of the trend from the past few years. We are going “back” to using symbols and text for retrieval, but with the enhanced reasoning abilities of large LLMs.
+
+
+    References and Resources
+    ELITE: Embedding-Less retrieval with Iterative Text Exploration
+    Agent-based RAG (A-RAG) without Vector Store
+    GraphRag: When your Rag needs a Memory Palace
+    MiniRAG: Towards Extremely Simple Retrieval-Augmented Generation
+    Prompt-RAG: Pioneering Vector Embedding-Free Retrieval-Augmented Generation in Niche Domains, Exemplified by Korean Medicine
+    RAPTOR: Recursive Abstractive Processing for Tree-Organized Retrieval
+
+
+RAG 2.0
+
+    SOTA Retrieval Algorithms: SPLADE, DRAGON, and Hybrid search. * Contextualizing the Retriever for the Generator: RePlug and In-Context RALM (It uses Frozen RAG and BM25 and then specializes only the retrieval part via reranking.)
+
+        Combined Contextualized Retriever and Generator: k-NN LM and Fusion In Decoder
+        SOTA Contextualizaton: REALM and ATLAS
+
+    RAG2.0
+
+    Contextual Language Models (CLMs) play a central role in the success of RAG 2.0 by fundamentally enhancing how the system integrates and utilizes retrieved information. Unlike traditional language models that rely only on static, pre-trained knowledge, CLMs in RAG 2.0 dynamically incorporate external information both at training and inference time. This dynamic integration allows the models to adapt more effectively to specific domains and tasks, significantly improving accuracy and relevance in retrieval-augmented generation.
+
+    Key roles of CLMs in RAG 2.0 include:
+
+        End-to-End Training: CLMs are trained jointly with the retriever, allowing backpropagation of errors through both the retrieval and generation components. This joint optimization leads to better synergy between retrieval and language generation, making the system more robust and aligned to the task-specific retrieval needs.
+        Enhanced Context Awareness: By using contextual embeddings generated dynamically based on the current query and conversation history, CLMs enable more nuanced and precise retrieval. This allows RAG 2.0 to fetch information that is highly relevant to the immediate context, improving response quality.
+        Improved Faithfulness and Freshness: CLMs learn to stay better grounded in retrieved evidence, reducing hallucinations and increasing the factual accuracy of responses. They are also better at integrating up-to-date or domain-specific knowledge, overcoming limitations of models that rely solely on pre-trained static data.
+        Superior Performance: CLMs in RAG 2.0 outperform strong frozen RAG baselines based on large models like GPT-4, showing substantial gains on various benchmarks including open-domain question answering, faithfulness, and freshness across standard datasets.
+        Scalability and Efficiency: CLMs handle longer context windows and large knowledge bases more effectively than long-context language models. This makes RAG 2.0 both more scalable and computationally efficient in practical, production-grade scenarios.
+
+    Overall, Contextual Language Models are core to why RAG 2.0 works better than traditional RAG systems; they enable seamless integration and optimization of retrieval and generation into a coherent, end-to-end trainable system that provides more accurate, contextually relevant, and scalable results.
+
+
+    First, a Quick Recap: What is Basic "RAG 1.0"?
+
+    Traditional RAG (what we can now call "RAG 1.0") is a simple two-step process:
+
+        Retrieve: Given a user query, search a knowledge base (usually a vector database) for the most relevant text chunks or documents.
+        Generate: Feed these retrieved chunks and the original query to a Large Language Model (LLM) and ask it to generate an answer based on that context.
+
+    The Problem with RAG 1.0: It's often a "single-shot" system. It retrieves once, generates once, and hopes for the best. This leads to common failure modes:
+
+        Retrieving irrelevant information.
+        The LLM ignoring the provided context ("context neglect").
+        No way to verify the quality of the answer.
+        Struggling with complex, multi-step questions.
+
+
+    What is RAG 2.0? The Next-Generation Architecture
+
+    RAG 2.0 isn't a single, rigid specification but rather a family of advanced architectures that make the RAG process more iterative, adaptive, and intelligent. The core philosophy is moving from a simple "retrieve-then-read" pipeline to a more sophisticated "retrieve-read-retrieve-again" loop with various quality checks and optimizations.
+
+    Think of it as upgrading from a simple Google search to a conversation with a expert research assistant who looks up information, thinks about it, asks clarifying questions, and then looks up more information to fill in the gaps.
+    Key Pillars and Components of RAG 2.0 Architecture
+
+    Here are the defining characteristics and techniques that make up RAG 2.0:
+    1. Advanced Retrieval Strategies
+
+    Instead of just a single vector similarity search, RAG 2.0 employs a multi-faceted approach:
+
+        Hybrid Search: Combines dense vector search (for semantic meaning) with sparse lexical search (like BM25 for keyword matching) for better recall.
+        Multi-Query & Query Transformation: The system automatically rephrases or decomposes the user's original query into multiple, simpler queries to retrieve more diverse and comprehensive context.
+        Example: For "Compare the marketing strategies of Apple and Samsung," the system might generate separate queries for "Apple marketing strategy" and "Samsung marketing strategy."
+        Step-Back Prompting / Query Expansion: The LLM is prompted to generate a more fundamental, conceptual question behind the user's query to retrieve foundational knowledge.
+        Metadata Filtering: Heavily uses metadata (e.g., date, author, document type) to filter results before or after the semantic search, ensuring relevance and recency.
+
+    2. Iterative "Retrieve-and-Read" Loops
+
+    This is the heart of RAG 2.0. The system doesn't just retrieve once.
+
+        Self-RAG / Adaptive RAG: The LLM acts as a judge. After an initial retrieval and generation attempt, it critiques its own work.
+        "Is the retrieved context relevant?"
+        "Is my answer supported by the context?"
+        "Is the answer sufficient, or do I need more information?"
+        Based on this self-critique, the system can decide to trigger a new, more refined retrieval or proceed with final answer generation.
+        Corrective RAG (CRAG): A lightweight "correcter" model assesses the quality of the retrieved documents. If they are deemed unreliable, it can kick off a web search or a different retrieval strategy to "correct" the knowledge gap.
+
+    3. Fine-Tuning and Specialization
+
+    RAG 2.0 systems are often optimized end-to-end.
+
+        Fine-tuning the Embedding Model: The model that creates the vector representations is fine-tuned on domain-specific data, making retrieval much more accurate for specialized topics (e.g., legal, medical).
+        Fine-tuning the LLM: The generator LLM is fine-tuned to better follow instructions specific to the RAG task, such as "strictly base your answer on the provided context."
+
+    4. Agentic and Reasoning Capabilities
+
+    RAG 2.0 often incorporates principles of AI Agents.
+
+        Tool Use: The RAG system can use other tools beyond its vector database. For example, if the retrieved information is outdated, it can call a web search API to get the latest data.
+        Decomposition: For complex questions, an agent can break the question down into sub-questions, run a RAG cycle for each, and then synthesize a final answer.
+
+    A Simple RAG 2.0 Workflow Example
+
+    Let's see how these components come together for the query: "What were the main causes of the 2008 financial crisis, and what similar regulations exist today to prevent a recurrence?"
+
+        Query Transformation:
+
+        The system decomposes this into: 1) "Main causes of 2008 financial crisis," 2) "Financial regulations enacted after 2008," 3) "Current financial regulations in place."
+
+        Hybrid Retrieval:
+
+        A hybrid search is performed for each sub-query against a database of financial documents and news articles, filtered for high authority and post-2008 dates where relevant.
+
+        Iterative Retrieval & Self-Critique:
+
+        The LLM generates a draft answer for "current regulations." It self-critiques: *"My context only has regulations up to 2015 (Dodd-Frank). This is insufficient."*
+        This critique triggers a new retrieval, perhaps with a tool call to a web search for "financial regulations 2023-2024."
+
+        Synthesis and Final Answer:
+
+        With comprehensive, multi-perspective context from all retrieval steps, the LLM synthesizes a final, well-grounded answer that addresses both parts of the complex original question.
+
+
+    Summary: RAG 1.0 vs. RAG 2.0
+
+
+    FeatureRAG 1.0 (Naive/Basic)RAG 2.0 (Advanced)RetrievalSingle, simple vector searchHybrid, multi-query, adaptiveProcessLinear ("Retrieve-then-Generate")Iterative, recursive loopIntelligenceDumb retriever, smart generatorSmart retriever, smart generator, self-criticQuery HandlingHandles the query as-isTransforms, decomposes, and expands the queryGoalProvide context to the LLMGuarantee the answer is correct and grounded
+
+    In essence, RAG 2.0 is a move from a static pipeline to a dynamic, self-correcting, and highly reliable knowledge system. It's the necessary evolution to make RAG production-ready for critical enterprise applications where accuracy is paramount.
+
+
+    What Makes RAG 2.0 Different?
+
+    The fundamental shift in RAG 2.0 is from a naive, linear pipeline to an intelligent, adaptive system. The core advancements can be summarized as follows:
+
+        End-to-End Optimization: Unlike RAG 1.0, which uses "frozen" off-the-shelf models for retrieval and generation, RAG 2.0 advocates for pre-training, fine-tuning, and aligning all components as a single, integrated system. This end-to-end optimization, often backpropagating through both the retriever and the generator, maximizes performance for specific tasks.
+        Intelligent and Iterative Retrieval: RAG 2.0 systems don't just retrieve once. They use techniques like multi-hop retrieval (sequential searches to gather information step-by-step) and self-critique (evaluating the quality of retrieved documents) to fetch better context, even triggering web searches if initial results are poor.
+        Advanced Query Understanding: The system actively rewrites and refines user queries before retrieval. This involves expanding acronyms, adding missing entities, and breaking down complex questions into simpler sub-questions to drastically improve retrieval accuracy.
+        Sophisticated Data Indexing: Instead of one embedding per document, RAG 2.0 often uses multi-vector indexing, creating separate embeddings for different parts of a document (like the title, summary, and key entities) to capture more nuanced semantic meaning.
+        Hybrid Search as a Standard: RAG 2.0 relies on combining multiple search techniques—dense vector search (for semantic meaning), sparse keyword search (like BM25 for exact matches), and sometimes even knowledge graph traversal—to ensure both high recall and high precision.
+
+    Architectural Patterns & Components
+
+    A RAG 2.0 system features a more complex and orchestrated flow. Here are some of the key advanced architectural patterns:
+
+
+    PatternCore Concept & WorkflowIdeal Use CaseSelf-RAGSelf-critique & iterative retrieval. Dynamically critiques its own retrieved context and generation, issuing new retrieval queries to fill information gaps during the generation process.Exploratory research, long-form content creation where information needs evolve.Corrective RAG (CRAG)Self-grading & correction. "Grades" retrieved documents for relevance; if they fail a confidence threshold, it automatically triggers corrective actions like a web search.High-stakes applications requiring maximal factual accuracy (legal, medical, financial).Agentic RAGMulti-agent orchestration. Employs a "meta-agent" to coordinate multiple "document agents," each responsible for a specific document or data source, for complex synthesis.Automated research, executive decision support requiring synthesis from multiple specialized sources.Adaptive RAGDynamic strategy selection. Analyzes query complexity and dynamically chooses the best retrieval strategy (e.g., single-source vs. multi-source) for speed and accuracy.Enterprise search systems with highly variable query types.
+
+    A typical high-level RAG 2.0 data pipeline integrates these smart components:
+
+        Query Understanding Layer: Rewrites and refines the user's original query.
+        Retriever Orchestration Engine: Routes the refined query to the appropriate retrievers (vector, keyword, graph).
+        Indexing Layer: Houses a Multi-Vector Database and potentially a Knowledge Graph.
+        Context Optimizer: Reranks and summarizes retrieved chunks to fit context windows and maximize relevance.
+        LLM Prompt Composer & Inference: Constructs the final prompt and generates the answer.
+
+    Implementation & Security Focus
+
+    Building a production-grade RAG 2.0 system requires attention to several key areas:
+
+        Database Requirements: You need a powerful database that natively supports hybrid search (vector + keyword) and can handle metadata filtering at scale. Performance on massive datasets is critical.
+        The Shift from Orchestration to Integration: RAG 2.0's tightly coupled, iterative stages are less suited to simple orchestration frameworks. The focus shifts to deep integration and optimization of each stage of the pipeline.
+        Security in Multi-Tenant Environments (RAG 2.0 Security): A major advancement is the focus on runtime security. This involves session-based policy evaluation and strict metadata filtering in the vector database to prevent data leaks, ensuring User A cannot retrieve documents from User B based on semantic similarity alone.
+
+    Getting Started & Tools
+
+    Moving from a basic RAG 1.0 prototype to a RAG 2.0 system involves a mindset shift from simple orchestration to building an end-to-end, optimized search system.
+
+    You can start by incrementally adding advanced components to a basic RAG pipeline, such as a query rewriter or a hybrid retriever. The open-source project RAGFlow is cited as an example of a platform built with these RAG 2.0 pipeline principles in mind.
+
+
+RAG vs. Long-context LLMs
+
+    Language models have come a long way, starting from the good old ChatGPT with a context window as small as a few thousand to Gemini 1.5 Pro handling up to a million tokens at once. In search of ways to process more information than the initial context windows could handle, scientists developed retrieval augmented generation (RAG) – which would be tied up to their language models and help retrieve real-time and accurate answers from external documents. But now that we have around 1000 times bigger context windows that can handle a whole encyclopedia, a question naturally arises: Do we still need RAG?
+
+RAG vs. Long-context LLMs | SuperAnnotate
+

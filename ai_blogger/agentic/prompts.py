@@ -8,6 +8,11 @@ analyst_prompt = """
     6. List of topics and sub topics must be arranged in a way which takes the users from understandig the problem statement to final solution, approaches & limitations.
     7. Adhere to the topic and content. Dont add any additional material and topic from your own.
     8. Dont add any topic or subtopic on your own.
+    9. Return the response in below format:
+    ### Output Structure:
+    - topics: List of topics
+        - topic: Topic title
+        - sub_topics: List of sub topics
 """
 
 
@@ -26,6 +31,7 @@ You are a highly specialized deep research assistant on the topic of AI & LLM ta
 1. Deep Reseach Content
 2. List of Sources (with URLs)
 """
+
 
 blogger_prompt = """
 You are a professional technical blogger for medium. 
