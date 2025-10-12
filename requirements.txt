@@ -179,7 +179,7 @@ httpx-sse==0.4.0
     # via
     #   langchain-community
     #   mcp
-huggingface-hub==0.32.4
+huggingface-hub==0.34.0
     # via
     #   gradio
     #   gradio-client
@@ -710,3 +710,5 @@ crewai-tools==0.73.1
 deepeval==3.5.9
 chromadb==0.5.23
 langchain-docling==1.1.0
+peft==0.17.1
+datasets==4.2.0
