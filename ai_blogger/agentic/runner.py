@@ -33,10 +33,16 @@ def research(topic_to_research: Topic):
 def blog(blog_name: str, detailed_research: str):
 
     response = asyncio.run(BloggerAgent().run(detailed_research))
+    directory_path = f".\\ai_blogger\\agentic\\blogs\\{blog_name}"
+    os.makedirs(directory_path, exist_ok=True)
     
-    with open(f".\\ai_blogger\\agentic\\blogs\\{blog_name}.md", "a") as file_object:
+    with open(f"{directory_path}\\blog.md", "a") as file_object:
         # Write the new content to the file
-        file_object.write(str(response))
+        try:
+            file_object.write(str(response))
+        except:
+            print(f"failed while writing {response}\n\n")
+        
         file_object.write("\n\n")
     
 
@@ -48,41 +54,46 @@ def edit(blog_name: str, blog: str):
     
     response = asyncio.run(EditorAgent().run(blog))
     
-    with open(f".\\ai_blogger\\agentic\\blogs\\{blog_name}_edited.md", "a") as file_object:
+    with open(f".\\ai_blogger\\agentic\\blogs\\{blog_name}\\blog_edited.md", "a") as file_object:
         # Write the new content to the file
         file_object.write(str(response))
         file_object.write("\n\n")
 
 
-def read_topic():
+def read_topic(path):
     """Read the topic.txt file and return its content as a string."""
-    with open("./ai_blogger/rag_topic.txt", "r", encoding="utf-8") as f:
+    with open(path, "r", encoding="utf-8") as f:
         return f.read()
+
 
 def read_blog(blog_name: str):
     """Read the specified blog markdown file and return its content as a string."""
-    with open(f"./ai_blogger/agentic/blogs/{blog_name}.md", "r", encoding="utf-8") as f:
+    with open(f"./ai_blogger/agentic/blogs/{blog_name}/blog.md", "r") as f:
         return f.read()
 
 
 load_dotenv(override=True)
 
-goal= "Different techniques to improve beyod Naive RAG"
-user_input = read_topic()
+goal= "LLM Fine Tuning and how it compares with RAG & Prompt Engineering"
+name = "llm_fine_tuning"
+user_input = read_topic("ai_blogger\\agentic\\inputs\\fine_tuning.txt")
 
-response = analysis(goal, user_input)
+# response = None
+# while True:
+#     response = analysis(goal, user_input)
 
-shall_continue = input("Do you want to continue with research and blog writing? (yes/no): ").strip().lower()
-if shall_continue not in ['yes', 'y']:
-    print("Exiting the program.")
-    exit(0)
+#     shall_continue = input("Do you want to continue with research and blog writing? (yes/no): ").strip().lower()
+#     if shall_continue not in ['yes', 'y']:
+#         print("\n\nre running the analysis...")
+#     else:
+#         break
 
-for topic in response.topics:
-    print(f"\ntopic: {topic.topic}")
+# for topic in response.topics:
+#     print(f"\ntopic: {topic.topic}")
 
-    detailed_research = research(topic)
+#     detailed_research = research(topic)
 
-    blog("rag", detailed_research.research)
+#     blog(name, detailed_research.research)
 
-content = read_blog("rag")
-edit("rag", content)
+content = read_blog(name)
+edit(name, content)

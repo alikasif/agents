@@ -1,0 +1,202 @@
+What is LLM fine-tuning?
+
+Fine-tuning is the process of taking a pre-trained model and further training it on a domain-specific dataset. Fine-tuning a large language model (LLM) involves continuing the training of a pre-trained LLM on a targeted dataset to improve its performance on a specific task or within a particular domain. This approach builds on the model’s existing knowledge, reducing the time and resources required compared to training from scratch.
+
+Fine-tuning transfers the pre-trained model’s learned patterns and features to new tasks, improving performance and reducing training data needs.
+
+
+
+Types of Fine Tuning
+
+In-context learning is a method for improving the prompt through specific task examples within the prompt, offering the LLM a blueprint of what it needs to do.
+Instruction Fine-Tuning via Prompt Engineering
+
+This method relies on providing the LLM with natural language instructions, useful for creating specialised assistants. It reduces the need for vast amounts of labelled data but depends heavily on the quality of the prompts.
+
+
+Zero-shot inference takes your input data in the prompt without extra examples. If zero-shot inference doesn't yield the desired results, 'one-shot' or 'few-shot inference' can be used. These tactics involve adding one or multiple completed examples within the prompt, helping smaller LLMs perform better.
+
+
+Supervised fine-tuning means updating a pre-trained language model using labeled data to do a specific task. The data used has been checked earlier. This is different from unsupervised methods, where data isn't checked. Usually, the initial training of the language model is unsupervised, but fine-tuning is supervised.
+Unsupervised Fine-Tuning
+
+This method does not require labelled data. Instead, the LLM is exposed to a large corpus of unlabelled text from the target domain, refining its understanding of language. This approach is useful for new domains like legal or medical fields but is less precise for specific tasks such as classification or summarisation.
+
+
+
+Transfer learning
+
+Even though all fine-tuning techniques are a form of transfer learning, this category is specifically aimed to allow a model to perform a task different from the task it was initially trained on. The main idea is to leverage the knowledge the model has gained from a large, general dataset and apply it to a more specific or related task.
+
+
+How is fine-tuning performed?
+
+preparing the training data,
+
+Once your instruction data set is ready, as with standard supervised learning, you divide the data set into training validation and test splits. During fine-tuning, you select prompts from your training data set and pass them to the LLM, which then generates completions.
+
+During the fine-tuning phase, when the model is exposed to a newly labeled dataset specific to the target task, it calculates the error or difference between its predictions and the actual labels. The model then uses this error to adjust its weights, typically via an optimization algorithm like gradient descent. The magnitude and direction of weight adjustments depend on the gradients, which indicate how much each weight contributed to the error. Weights that are more responsible for the error are adjusted more, while those less responsible are adjusted less.
+
+Over multiple iterations (or epochs) of the dataset, the model continues to adjust its weights, honing in on a configuration that minimizes the error for the specific task. The aim is to adapt the previously learned general knowledge to the nuances and specific patterns present in the new dataset, thereby making the model more specialized and effective for the target task.
+
+During this process, the model is updated with the labeled data. It changes based on the difference between its guesses and the actual answers. This helps the model learn details found in the labeled data. By doing this, the model improves at the task for which it's fine-tuned.
+
+
+Methods for fine-tuning LLMs
+
+
+Instruction fine-tuning
+
+One strategy used to improve a model's performance on specific tasks is instruction fine-tuning. It's about training the machine learning model using examples that demonstrate how the model should respond to the query. The dataset you use for fine-tuning large language models has to serve the purpose of your instruction
+Full fine-tuning
+
+Instruction fine-tuning, where all of the model's weights are updated, is known as full fine-tuning. The process results in a new version of the model with updated weights. It is important to note that just like pre-training, full fine-tuning requires enough memory and compute budget to store and process all the gradients, optimizers, and other components being updated during training.
+
+
+Parameter-efficient fine-tuning
+
+While full LLM fine-tuning updates every model's weight during the supervised learning process, PEFT methods only update a small set of parameters. This transfer learning technique chooses specific model components and "freezes" the rest of the parameters. The result is a much smaller number of parameters than in the original model (in some cases, just 15-20% of the original weights; LoRA can reduce the number of trainable parameters by 10,000 times). This makes memory requirements much more manageable.
+
+PEFT is also dealing with catastrophic forgetting. Since it's not touching the original LLM, the model does not forget the previously learned information. Full fine-tuning results in a new version of the model for every task you train on. Each of these is the same size as the original model, so it can create an expensive storage problem if you're fine-tuning for multiple tasks.
+
+
+Transfer learning: Transfer learning is about taking the model that had learned on general-purpose, massive datasets and training it on distinct, task-specific data. This dataset may include labeled examples related to that domain. Transfer learning is used when there is not enough data or a lack of time to train data; the main advantage of it is that it offers a higher learning rate and accuracy after training.
+
+
+Task-specific fine-tuning: Task-specific fine-tuning is a method where the pre-trained model is fine-tuned on a specific task or domain using a dataset designed for that domain. This method requires more data and time than transfer learning but can result in higher performance on the specific task.
+
+there is a potential downside to fine-tuning on a single task. The process may lead to a phenomenon called catastrophic forgetting.
+
+Catastrophic forgetting happens because the full fine-tuning process modifies the weights of the original LLM. While this leads to great performance on a single fine-tuning task, it can degrade performance on other tasks. 
+
+
+Multi-task learning: Multi-task fine-tuning is an extension of single-task fine-tuning, where the training dataset consists of example inputs and outputs for multiple tasks.
+
+
+Sequential fine-tuning: Sequential fine-tuning is about sequentially adapting a pre-trained model on several related tasks. After the initial transfer to a general domain, the LLM might be fine-tuned on a more specific subset. 
+
+
+Note that there are other fine-tuning techniques – adaptive, behavioral, instruction, reinforced fine-tuning of large language models. These cover some important specific cases for training language models.
+
+
+Full fine-tuning vs. parameter-efficient fine-tuning
+Models can be either fully fine-tuned, which updates all their parameters or fine-tuned in a way that updates only the most relevant parameters. This latter process is known as parameter-efficient fine-tuning (PEFT) and is a cost-effective way to make models more effective in a certain domain.
+Fine-tuning a model is compute-intensive and requires multiple powerful GPUs running in tandem—let alone the memory to store the LLM itself. PEFT enables LLM users to retrain their models on simpler hardware setups while returning comparable performance upgrades in the model’s intended use case, such as customer support or sentiment analysis. Fine-tuning especially excels at helping models overcome bias, which is a gap between the model’s predictions and actual real-world outcomes. 
+
+Fine-tuning vs. continuous pretraining
+Pretraining occurs at the very start of the training process. The model weights or parameters are randomly initialized and the model commences training on its initial data set. Continuous pretraining introduces a trained model to a new unlabeled data set in a practice known as transfer learning. The pretrained model "transfers" what it has learned so far to new external information.
+By contrast, fine-tuning uses labeled data to hone a model’s performance in a selected use case. Fine-tuning excels at honing a model’s expertise at specific tasks, while continuous pretraining can deepen a model’s domain expertise.
+
+Seven Stage Fine-Tuning Pipeline for LLM
+
+ Dataset Preparation, Model Initialisation, Training Environment Setup, Fine-Tuning, Evaluation and Validation, Deployment, and Monitoring and Maintenance.
+
+
+Dataset Preparation
+
+Fine-tuning a Large Language Model (LLM) starts with adapting the pre-trained model for specific tasks by updating its parameters using a new dataset. This involves cleaning and formatting the dataset to match the target task, such as instruction tuning, sentiment analysis, or topic mapping. The dataset is composed of <input,output> pairs, demonstrating the desired behaviour for the model.
+
+
+Defining Hyperparameters
+
+Key hyperparameters like learning rate, batch size, epochs are crucial for enhancing the model’s performance and obtaining superior outcomes. 
+
+    Learning Rate: Fine-tuning an LLM involves using optimisation algorithms like stochastic gradient descent (SGD). This technique estimates the error gradient for the model’s current state using samples from the training dataset and subsequently updates the model’s weights via the backpropagation of errors algorithm. The learning rate dictates the speed at which the model adapts to the problem. Smaller learning rates necessitate more training due to the minimal weight adjustments per update, while larger learning rates lead to quicker changes to weights [48].
+    2. Batch Size: A batch refers to a subset of the training data used to update a model’s weights during the training process. Batch training involves dividing the entire training set into smaller groups, updating the model after processing each batch. The batch size is a hyperparameter that determines the number of samples processed before the model parameters are updated.
+    3. Epochs: Epoch refers to a full pass through the entire training dataset. This involves a complete forward and backward pass through the dataset. The dataset can be processed as a single batch or divided into multiple smaller batches. An epoch is considered complete once the model has processed all batches and updated its parameters based on the calculated loss.
+
+
+Steps Involved in Fine-Tuning
+
+Initialise the Pre-Trained Tokenizer and Model:
+
+Modify the Model’s Output Layer
+
+Choose an Appropriate Fine-Tuning Strategy: 
+
+    Task-Specific Fine-Tuning: For tasks such as text summarisation, code generation, classification, and question answering, adapt the model using relevant datasets.
+    Domain-Specific Fine-Tuning: Tailor the model to comprehend and generate text relevant to specific domains, such as medical, financial, or legal fields.
+    Parameter-Efficient Fine-Tuning (PEFT): Techniques like LoRA, QLoRA, and adapters allow for fine-tuning with reduced computational costs by updating a small subset of model parameters.
+    Half Fine-Tuning (HFT): Balance between retaining pre-trained knowledge and learning new tasks by updating only half of the model’s parameters during each fine-tuning round.
+
+
+
+Steps to fine tune a model
+
+Step 1: Choose a pre-trained model and a dataset
+
+Step 2: Load the data to use
+
+Step 3: Tokenizer
+
+Step 4: Initialize our base model
+
+Step 5: Evaluate method
+
+Step 6: Fine-tune using the Trainer Method
+
+
+Fine-tuning Best Practices
+
+
+    data quality & quantity
+    hyperparameter tuning
+    regular evaluation
+
+
+Fine tuning pitfalls
+
+    overfitting
+    underfitting
+    catastrophic forgetting
+    data leakage
+
+Parameter Efficient Fine Tuning (PEFT) is an impactful NLP technique that adeptly adapts pre-trained language models to various applications with remarkable efficiency. 
+PEFT methods fine-tune only a small subset of (additional) model parameters while keeping most of the pre-trained LLM parameters frozen, thereby significantly reducing computational 
+and storage costs. This approach mitigates the issue of catastrophic forgetting, a phenomenon where neural networks lose previously acquired knowledge and experience a significant 
+performance decline on previously learned tasks when trained on new datasets.
+
+
+LoRA is an improved finetuning method where instead of finetuning all the weights that constitute the weight matrix of the pre-trained large language model, 
+two smaller matrices that approximate this larger matrix are fine-tuned. These matrices constitute the LoRA adapter. This fine-tuned adapter is then loaded 
+into the pre-trained model and used for inference.
+
+After LoRA fine-tuning for a specific task or use case, the outcome is an unchanged original LLM and the emergence of a considerably smaller “LoRA adapter,”
+ often representing a single-digit percentage of the original LLM size (in MBs rather than GBs).
+
+During inference, the LoRA adapter must be combined with its original LLM. The advantage lies in the ability of many LoRA adapters to reuse the original LLM, 
+thereby reducing overall memory requirements when handling multiple tasks and use cases.
+
+
+QLoRA represents a more memory-efficient iteration of LoRA. QLoRA takes LoRA a step further by also quantizing the weights of the LoRA adapters (smaller matrices) to 
+lower precision (e.g., 4-bit instead of 8-bit). This further reduces the memory footprint and storage requirements. In QLoRA, the pre-trained model is loaded into GPU
+ memory with quantized 4-bit weights, in contrast to the 8-bit used in LoRA. Despite this reduction in bit precision, QLoRA maintains a comparable level of effectiveness to LoRA.
+
+
+Weight-Decomposed Low-Rank Adaptation (DoRA) [66] is a novel fine-tuning methodology designed to optimise pre-trained models by decomposing their weights 
+into magnitude and directional components. This approach leverages the efficiency of Low-Rank Adaptation (LoRA) for directional updates,
+ facilitating substantial parameter updates without altering the entire model architecture. DoRA addresses the computational challenges
+  associated with traditional full fine-tuning (FT) by maintaining model simplicity and inference efficiency, while simultaneously bridging the performance gap
+   typically observed between LoRA and FT.
+
+
+To use your LLM most effectively0, you should know when to use RAG vs fine-tuning vs prompt engineering. The right choice depends on the specific requirements of a 
+given use case.RAG should be used when factual accuracy and up-to-date knowledge are crucial. For example, the RAG chatbot of a healthcare provider must not only be 
+able to provide general information about treatments and medications, but should also be able to personalize its response by patient, including current condition, 
+medical history, and known allergic reactions to drugs, etc.Fine-tuning might be the method of choice for a narrowly-defined task – like a sentiment analysis model 
+tailored to analyze product reviews. The retrieval-augmented generation vs fine-tuning question has different answers, in terms of when to use what, worthy of careful 
+consideration.Prompt engineering, known for its flexibility and adaptability, may be ideal for apps requiring a diverse array of responses, like open-ended question/answer
+ sessions or creative writing tasks. Market-leading RAG solutions make use of the latest techniques, like chain-of-thought prompting.Ultimately, 
+ the choice between RAG vs fine-tuning vs prompt engineering comes down to careful consideration of several factors such as desired outcome, available resources, 
+ and the nature of the data.
+
+Choice between RAG, Fine tuning and prompt engineering must be compared on below dimensions
+-Accuracy (How accurate the responses can be?)
+-Implementation complexity (How complex the implementation can be?)
+-Effort (How much effort is required to implement?)
+-Total Cost of Ownership (TCO) (What is the total cost of owning the solution?)
+-Ease of updates and changes (How loosely coupled the architecture is? How easy it is to replace/upgrade components?)
+
+You may ask: why can’t I use more methods? For example: I want to fine-tune my model to have my brand voice and I also want it to use only my data to generate answers (RAG).
+That is also possible and often the best option! You can tune a model and then use it to perform another task. Or you can also tune an LLM and 
+then perform in-context prompt engineering on it to make sure the model behaves as desired. To sum up, you can freely combine the aforementioned methods at your convenience.

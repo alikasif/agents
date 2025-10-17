@@ -94,7 +94,7 @@ class EditorAgent:
         
         self.editor_agent = Agent(
             name="AI/LLM Technical Editor",
-            model=get_model("GEMINI"),
+            model=get_model("ANTHROPIC"),
             instructions=editor_prompt,
             tools=[google_search]
         )
