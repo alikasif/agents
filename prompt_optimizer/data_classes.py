@@ -26,9 +26,18 @@ class ReflectorOutput(BaseModel):
     validation_tests: list[str]
 
 
+class OptimizerOutput(BaseModel):
+    prompt_text: str
+    variant: str
+    notes: list[str]
+    validate: list[str]
+    
+
 class OptimizerState(TypedDict):
     user_input: str
     generator_prompt: str
     generator_output: str
-    reflector_output: ReflectorOutput
+    reflector_json: str
+    optimizer_output: OptimizerOutput
+    re_generator_output: str
     loop_count: int
