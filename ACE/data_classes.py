@@ -4,8 +4,7 @@ from typing import TypedDict
 
 class GeneratorOutput(BaseModel):
     user_input: str
-    linkedin_post: str
-    thoughts: str
+    reasoning_trajectories: list[str]
 
 
 class HyperParameters(BaseModel):
@@ -43,6 +42,15 @@ class OptimizerState(TypedDict):
     re_generator_output: str
     loop_count: int = 0
 
+class Deltas(BaseModel):
+    type: str
+    content: str
+    provenance: str
+    action: str
+
 class AgenticReflectorOutput(BaseModel):
-    prompt_bulleted_points: list[str]
-    input_bulleted_points: list[str]
+    critique_summary: str
+    proposed_deltas: list[Deltas]
+
+
+

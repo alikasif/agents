@@ -7,12 +7,12 @@ import logging
 import os
 from dotenv import load_dotenv
 from langchain.chat_models import init_chat_model
-from langgraph.graph import StateGraph, START, END
+from langgraph.graph import StateGraph, START
 
 from langgraph.prebuilt import create_react_agent
 
-from langchain_community.llms import OpenAI
 from tools import get_google_search_tool
+
 
 
 logging.basicConfig(level=logging.INFO) # Set the root logger level to INFO
@@ -24,7 +24,7 @@ def get_model(prefix = "OPENAI", provider="openai"):
     return llm
 
 
-def get_agent(prompt: str, modle_prefix="OPENAI", provider ="openai", response_format=None):    
+def get_agent(modle_prefix="OPENAI", provider ="openai", response_format=None):    
     
     if response_format:
         return create_react_agent(model=get_model(prefix=modle_prefix, provider=provider), tools=[get_google_search_tool()], response_format=response_format)
@@ -36,56 +36,50 @@ def generate(state: OptimizerState):
     
     print(f"============================================================generate===========================================================================")
     
-    llm = get_model()
-    llm = llm.with_structured_output(GeneratorOutput)
+    formatted_prompt = reasoning_trajectory_prompt.format(user_query= state["user_input"], 
+                                       list_of_current_bullets_with_ids_and_content= "google_search_tool: useful for searching recent information")
+
+    agent = get_agent(response_format=GeneratorOutput)    
     
     messages = []
-    generator_prompt = state["generator_prompt"]
-    generated_prompt = generator_prompt.format(topic=state["user_input"])    
-    messages.append({"role":"system", "content": generated_prompt})    
     
-    response = llm.invoke(messages)        
+    messages.append({"role":"system", "content": formatted_prompt})        
+    
+    response = agent.invoke({"messages": messages})
 
-    print(f"\n**generate: {response}")
+    print(f"\n**generate: {response["structured_response"]}")
     
-    
-    return {"generator_output": response.linkedin_post}
+    return {"generator_output": response["structured_response"]}
 
 
 def agentic_reflector(state: OptimizerState):
     print(f"======================================================agentic_reflector {state["loop_count"]}=====================================================================")
-    user_input = state["user_input"]
-    generator_prompt = state["generator_prompt"]
-    generator_prompt = generator_prompt.format(topic=user_input)
-
-    improved_prompt = prompt_reviewer.format(USER_INPUT=user_input, 
-                                             ORIGINAL_PROMPT=generator_prompt, 
-                                             GENERATED_OUTPUT=state["generator_output"])
     
-    #print(f"\n\n improved prompt {improved_prompt}\n\n")
-
-    messages = [{"role": "human", "content":improved_prompt}]
+    reasoning_trajectories = state["generator_output"]
+    formatted_prompt = reflector_prompt.format(reasoning_trace=reasoning_trajectories)
+   
+    messages = [{"role": "human", "content":formatted_prompt}]
     agent = get_agent("OPENAI_GPT5", response_format=AgenticReflectorOutput)
 
     response = agent.invoke({"messages": messages})
     
     print(f"\n**reflector : {response["structured_response"]}\n")    
-    
-    return {"reflector_json": response["structured_response"], "loop_count": state.get("loop_count", 0)+1}
 
+    deltas = "\n".join(response["structured_response"].proposed_deltas)
+    
+    return {"reflector_json": deltas, "loop_count": state.get("loop_count", 0)+1}
 
 
 def agentic_optimizer(state: OptimizerState):
     
     print(f"========================================================agentic_optimizer {state["loop_count"]}=======================================================================")
 
-    optimized_prompt = optimizer_prompt.format(generator_prompt=state["generator_prompt"], 
-                                               REFLECTOR_JSON=state["reflector_json"], 
-                                               USER_INPUT=state["user_input"])
+    formatted_prompt = curator_prompt.format(proposed_deltas=state["reflector_json"])
 
     #print(f"\n\n optimized_prompt {optimized_prompt}\n\n")
 
-    messages = [{"role": "human", "content":optimized_prompt}]
+    messages = [{"role": "human", "content":formatted_prompt}]
+    
     agent = get_agent("OPENAI_GPT5", response_format=OptimizerOutput)
     
     response = agent.invoke({"messages": messages})
@@ -155,16 +149,15 @@ def run():
     workflow.add_node("judge", judge)
 
     workflow.add_edge(START, "generate")    
+
     workflow.add_edge("generate", "agentic_reflector")
-    workflow.add_edge("agentic_reflector", "optimizer")
-    workflow.add_edge("optimizer", "re_generate")
-    workflow.add_conditional_edges("re_generate", should_continue)
+    # workflow.add_edge("agentic_reflector", "optimizer")
+    # workflow.add_edge("optimizer", "re_generate")
+    # workflow.add_conditional_edges("re_generate", should_continue)
 
     app = workflow.compile()
     
-    app.invoke({"generator_prompt": generator_prompt, 
-                "user_input": "feature bloating and code bloating due to the use of co-pilot", 
-                "loop_count":0})
+    app.invoke({"loop_count": 0, "user_input": "Who won the 2016 Russian national silver medal with another Russian ice dancer born 29 April 1995?"})
 
 
 if __name__ == "__main__":
