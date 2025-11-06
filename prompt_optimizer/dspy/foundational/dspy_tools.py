@@ -20,10 +20,6 @@ def calculator(expression: str) -> str:
     except:
         return "Invalid expression"
 
-def google_search(query: str):
-    print(f"\nsearcing google with query {query}")
-    search = GoogleSerperAPIWrapper()
-    return search.run(query)
 
 # Define your tools as functions
 def get_weather(city: str) -> str:
@@ -31,12 +27,16 @@ def get_weather(city: str) -> str:
     # In a real implementation, this would call a weather API
     return f"The weather in {city} is sunny and 75°F"
 
+def google_search(query: str):
+    print(f"\nsearcing google with query {query}")
+    search = GoogleSerperAPIWrapper()
+    return search.run(query)
 
 def react_tool():
     # Create a ReAct agent
     react_agent = dspy.ReAct(
         signature="question -> answer",
-        tools=[get_weather, google_search],
+        tools=[google_search],
         max_iters=5
     )
 
@@ -66,12 +66,12 @@ predictor = dspy.Predict(signature=ToolSignature)
 
 
 # # Make a prediction
-# response = predictor(
-#     question="What's the weather in New York?",
-#     tools=list(tools.values())
-# )
+response = predictor(
+    question="What's the weather in New York?",
+    tools=list(tools.values())
+)
 
-# print(response)
+print(response)
 
 # # Execute the tool calls
 # for call in response.outputs.tool_calls:

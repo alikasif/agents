@@ -42,7 +42,6 @@ def tagging():
 
 class Emotion(dspy.Signature):
     """Classify emotion."""
-
     sentence: str = dspy.InputField()
     sentiment: Literal['sadness', 'joy', 'love', 'anger', 'fear', 'surprise'] = dspy.OutputField()
     llm_response: str = dspy.OutputField(desc="raw response from LLM")

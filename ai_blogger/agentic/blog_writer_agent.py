@@ -1,15 +1,10 @@
 
 """
 analyst agent read the summary and create a list of topics to be researched dumped in a file
-
 editor agent reads the file and call researcher agent for each topic 1 by 1
-
 researcer agent does the research on the topic passed to it and write the content to the file
-
 blog writer agent reads the file and write the blog
-
 each agent is a node in lang graph. each one of this is a react agent created using create_react_agent function in langgraph
-
 """
 
 from agents import Agent
@@ -35,6 +30,7 @@ def get_model(prefix= "OPENAI"):
 
 
 class AnalystAgent:
+    
     def __init__(self):        
         self.analyst_agent = Agent(
             name="AI & LLM application analyst",
@@ -90,7 +86,6 @@ class BloggerAgent:
 
 class EditorAgent:
     def __init__(self):        
-        # Create an asynchronous OpenAI-style client for calling external APIs (e.g., Gemini)
         
         self.editor_agent = Agent(
             name="AI/LLM Technical Editor",

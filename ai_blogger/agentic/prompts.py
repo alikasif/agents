@@ -13,6 +13,7 @@ analyst_prompt = """
     - topics: List of topics
         - topic: Topic title
         - sub_topics: List of sub topics
+        - content: relevant content provided in the input
 """
 
 
@@ -28,7 +29,7 @@ You are a highly specialized deep research assistant on the topic of AI & LLM ta
 - Prioritize depth over breadth.
 
 ### Output Structure:
-1. Deep Reseach Content
+1. Deep Research Content
 2. List of Sources (with URLs)
 """
 

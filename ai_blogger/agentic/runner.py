@@ -74,26 +74,27 @@ def read_blog(blog_name: str):
 
 load_dotenv(override=True)
 
-goal= "LLM Fine Tuning and how it compares with RAG & Prompt Engineering"
-name = "llm_fine_tuning"
-user_input = read_topic("ai_blogger\\agentic\\inputs\\fine_tuning.txt")
+goal= "Declarative Prompt Engineering Frameworks with Main Focus on DSPy & Opik"
+name = "declarative_prompt_engineering"
 
-# response = None
-# while True:
-#     response = analysis(goal, user_input)
 
-#     shall_continue = input("Do you want to continue with research and blog writing? (yes/no): ").strip().lower()
-#     if shall_continue not in ['yes', 'y']:
-#         print("\n\nre running the analysis...")
-#     else:
-#         break
+response = None
+while True:
+    user_input = read_topic("ai_blogger\\agentic\\inputs\\optimizer.txt")
+    response = analysis(goal, user_input)
 
-# for topic in response.topics:
-#     print(f"\ntopic: {topic.topic}")
+    shall_continue = input("Do you want to continue with research and blog writing? (yes/no): ").strip().lower()
+    if shall_continue not in ['yes', 'y']:
+        print("\n\nre running the analysis...")
+    else:
+        break
 
-#     detailed_research = research(topic)
+for topic in response.topics:
+    print(f"\ntopic: {topic.topic}")
 
-#     blog(name, detailed_research.research)
+    detailed_research = research(topic)
+
+    blog(name, detailed_research.research)
 
 content = read_blog(name)
 edit(name, content)

@@ -1,0 +1,401 @@
+Itroduction
+Large language models (LLMs), agentic workflows and vector stores have become steadily more powerful and frameworks to streamline the development of 
+AI applications have grown in popularity. DSPy is a toolkit that provides general-purpose modules that replace prompt engineering and direct input of natural 
+language with configuration using Python code. 
+
+Generally, working with LLMs or foundation models requires careful prompt engineering, where the user tweaks text prompts to get the right output. 
+While this approach can be effective, it’s time-consuming and error-prone and creates fragile toolchains that need to be updated when new versions of a model are 
+released. Popular frameworks like LangChain chain language models for application building and LlamaIndex focuses on improving search capabilities within texts. 
+With these developers still need expertise in fine-tuning prompts and time to test each prompt to get the desired output. DSPy simplifies this prompt tuning process 
+with a programmatic approach to guiding and bounding language model behavior.
+
+DSPy focuses on automating the optimization of prompt construction. To replace prompt hacking and one-off synthetic data generators, DSPy provides general optimizers, 
+which are algorithms that update parameters in your program. Whenever you modify your code, data, assertions or metrics, you can compile your program again and DSPy 
+will do the prompt optimization to create new effective prompts that fit your changes.
+
+Sometimes people imagine that automatic prompt optimization means creating a system where LLMs critique and improve user generated prompts. 
+This isn’t the most effective way to use LLMs. DSPy harnesses the idea generation power of LLMs to generate their own prompts. 
+Then, it tests those variations using an evaluation metric set to see whether they solve the problem better. 
+If they don’t perform numerically better on a user assigned metric, then the novel prompts are thrown away. It’s similar to an evolutionary algorithm where 
+the prompts are evaluated for their fitness and iteratively improved.
+
+DsPy
+
+DSPy is a declarative framework for building modular AI software. It allows you to iterate fast on structured code, rather than brittle strings, 
+and offers algorithms that compile AI programs into effective prompts and weights for your language models, whether you're building simple classifiers, 
+sophisticated RAG pipelines, or Agent loops.
+
+Instead of wrangling prompts or training jobs, DSPy (Declarative Self-improving Python) enables you to build AI software from natural-language modules 
+and to generically compose them with different models, inference strategies, or learning algorithms. This makes AI software more reliable, maintainable, 
+and portable across models and strategies.
+
+tl;dr Think of DSPy as a higher-level language for AI programming (lecture), like the shift from assembly to C or pointer arithmetic to SQL. Meet the community, 
+seek help, or start contributing via GitHub and Discord.
+
+
+
+How DSPy works?
+Tell DSPy what you want (Inputs → Outputs) using simple “Signatures”.
+Use DSPy’s building blocks (“Modules”) to structure the task.
+Let DSPy’s “Optimizer” automatically find the best magic words (prompts) for your specific LLM and your specific task, based on examples you provide.
+DSPy moves away from the fragile, string-based prompt engineering model and toward a Pythonic programming model. Think of it as defining what you want your LLM to 
+do — like in functional programming — without specifying how to say it in prompt text. It uses a declarative style, meaning you define what you want the LLM to do, 
+rather than how to do it. It also features self-improvement capabilities, allowing you to optimize prompts and weights automatically, improving the reliability 
+and adaptability of your applications.
+
+This allows you to spend less time fiddling with prompts, gives you more reliable results, and actually improves your LLM application automatically when you give 
+it examples. It turns messy “prompt hacking” into something more like structured programming and automated tuning.
+
+
+What are the things that DSPy provides that can be used to optimize prompts?
+    Signature : Is the most basic form of task description.
+    Modules: Provides the right general-purpose modules, which replace string-based prompting tricks. like react loop
+    Adapters: Adapters are the bridge between dspy module and the actual Language Model (LM). 
+    When you call a DSPy module, the adapter takes your signature, user inputs, and other attributes like demos (few-shot examples) and converts them into multi-turn messages that get sent to the LM.
+    Optimizers: yesare algorithms that update parameters in your program like prompt, parameters.
+    Evaluators: Are used to evalaute the output based on the input & pre-defined results.
+
+
+Signature:
+When we assign tasks to LMs in DSPy, we specify the behavior we need as a Signature.
+A signature is a declarative specification of input/output behavior of a DSPy module. Signatures allow you to tell the LM what it needs to do, rather than specify how we should ask the LM to do it.
+You're probably familiar with function signatures, which specify the input and output arguments and their types. DSPy signatures are similar, but with a couple of differences. While typical function signatures just describe things, DSPy Signatures declare and initialize the behavior of modules. Moreover, the field names matter in DSPy Signatures. You express semantic roles in plain English: a question is different from an answer, a sql_query is different from python_code
+
+
+Inline DSPy Signatures
+Signatures can be defined as a short string, with argument names and optional types that define semantic roles for inputs/outputs.
+Question Answering: "question -> answer", which is equivalent to "question: str -> answer: str" as the default type is always str
+Sentiment Classification: "sentence -> sentiment: bool", e.g. True if positive
+Summarization: "document -> summary"
+
+
+
+Dspy Module
+A DSPy module is a building block for programs that use LMs.
+
+Each built-in module abstracts a prompting technique (like chain of thought or ReAct). Crucially, they are generalized to handle any signature.
+A DSPy module has learnable parameters (i.e., the little pieces comprising the prompt and the LM weights) and can be invoked (called) to process inputs and return outputs.
+Multiple modules can be composed into bigger modules (programs). DSPy modules are inspired directly by NN modules in PyTorch, but applied to LM programs.
+
+
+DSPy shifts your focus from tinkering with prompt strings to programming with structured and declarative natural-language modules. For every AI component in your system, you specify input/output behavior as a signature and select a module to assign a strategy for invoking your LM. DSPy expands your signatures into prompts and parses your typed outputs, so you can compose different modules together into ergonomic, portable, and optimizable AI systems.
+
+
+
+ Internally, all other DSPy modules are built using dspy.Predict
+
+dspy.Predict: Basic predictor. Does not modify the signature. Handles the key forms of learning (i.e., storing the instructions and demonstrations and updates to the LM).
+dspy.ChainOfThought: Teaches the LM to think step-by-step before committing to the signature's response.
+dspy.ProgramOfThought: Teaches the LM to output code, whose execution results will dictate the response.
+dspy.ReAct: An agent that can use tools to implement the given signature.
+dspy.MultiChainComparison: Can compare multiple outputs from ChainOfThought to produce a final prediction.
+
+
+Signature + Module -> Prompt
+
+Adapters
+Adapters are the bridge between dspy.Predict and the actual Language Model (LM). When you call a DSPy module, the adapter takes your signature, user inputs, and other attributes like demos (few-shot examples) and converts them into multi-turn messages that get sent to the LM.
+
+The adapter system is responsible for:
+
+Translating DSPy signatures into system messages that define the task and request/response structure.
+Formatting input data according to the request structure outlined in DSPy signatures.
+Parsing LM responses back into structured DSPy outputs, such as dspy.Prediction instances.
+Managing conversation history and function calls.
+Converting pre-built DSPy types into LM prompt messages, e.g., dspy.Tool, dspy.Image, etc.
+
+
+Where Adapters Fit in the System¶
+The flow works as follows:
+
+The user calls their DSPy agent, typically a dspy.Module with inputs.
+The inner dspy.Predict is invoked to obtain the LM response.
+dspy.Predict calls Adapter.format(), which converts its signature, inputs, and demos into multi-turn messages sent to the dspy.LM. dspy.LM is a thin wrapper around litellm, which communicates with the LM endpoint.
+The LM receives the messages and generates a response.
+Adapter.parse() converts the LM response into structured DSPy outputs, as specified in the signature.
+The caller of dspy.Predict receives the parsed outputs.
+You can explicitly call Adapter.format() to view the messages sent to the LM
+
+ChatAdapter is the default adapter and works with all language models. It uses a field-based format with special markers.
+Adapters are a crucial component of DSPy that bridge the gap between structured DSPy signatures and language model APIs. 
+
+
+Tools
+DSPy provides powerful support for tool-using agents that can interact with external functions, APIs, and services. Tools enable language models to go beyond text generation by performing actions, retrieving information, and processing data dynamically.
+There are two main approaches to using tools in DSPy:
+
+dspy.ReAct - A fully managed tool agent that handles reasoning and tool calls automatically
+Manual tool handling - Direct control over tool calls using dspy.Tool, dspy.ToolCalls, and custom signatures
+
+Optimizers:
+DSPy Optimizers tune the prompts and weights of your AI modules.
+DSPy provides you with the tools to compile high-level code with natural language annotations into the low-level computations, prompts, or weight updates that align your LM with your program's structure and metrics. If you change your code or your metrics, you can simply re-compile accordingly.
+
+Once you have a system and a way to evaluate it, you can use DSPy optimizers to tune the prompts or weights in your program. Now it's useful to expand your data collection effort into building a training set and a held-out test set, in addition to the development set you've been using for exploration. For the training set (and its subset, validation set), you can often get substantial value out of 30 examples, but aim for at least 300 examples. Some optimizers accept a trainset only. Others ask for a trainset and a valset. When splitting data for most prompt optimizers, we recommend an unusual split compared to deep neural networks: 20% for training, 80% for validation. This reverse allocation emphasizes stable validation, since prompt-based optimizers often overfit to small training sets. In contrast, the dspy.GEPA optimizer follows the more standard ML convention: Maximize the training set size, while keeping the validation set just large enough to reflect the distribution of the downstream tasks (test set).
+
+After your first few optimization runs, you are either very happy with everything or you've made a lot of progress but you don't like something about the final program or the metric. At this point, go back to step 1 (Programming in DSPy) and revisit the major questions. Did you define your task well? Do you need to collect (or find online) more data for your problem? Do you want to update your metric? And do you want to use a more sophisticated optimizer? Do you need to consider advanced features like DSPy Assertions? Or, perhaps most importantly, do you want to add some more complexity or steps in your DSPy program itself? Do you want to use multiple optimizers in a sequence?
+
+Iterative development is key. DSPy gives you the pieces to do that incrementally: iterating on your data, your program structure, your metric, and your optimization steps. Optimizing complex LM programs is an entirely new paradigm that only exists in DSPy at the time of writing (update: there are now numerous DSPy extension frameworks, so this part is no longer true :-), so naturally the norms around what to do are still emerging
+
+A DSPy optimizer is an algorithm that can tune the parameters of a DSPy program (i.e., the prompts and/or the LM weights) to maximize the metrics you specify, like accuracy.
+
+A typical DSPy optimizer takes three things:
+
+Your DSPy program. This may be a single module (e.g., dspy.Predict) or a complex multi-module program.
+Your metric. This is a function that evaluates the output of your program, and assigns it a score (higher is better).
+A few training inputs. This may be very small (i.e., only 5 or 10 examples) and incomplete (only inputs to your program, without any labels).
+If you happen to have a lot of data, DSPy can leverage that. But you can start small and get strong results.
+
+
+Types of Optimizers
+Automatic Few-Shot Learning:
+These optimizers extend the signature by automatically generating and including optimized examples within the prompt sent to the model, implementing few-shot learning.
+
+LabeledFewShot: Simply constructs few-shot examples (demos) from provided labeled input and output data points. Requires k (number of examples for the prompt) and trainset to randomly select k examples from.
+BootstrapFewShot: Uses a teacher module (which defaults to your program) to generate complete demonstrations for every stage of your program, along with labeled examples in trainset. Parameters include max_labeled_demos (the number of demonstrations randomly selected from the trainset) and max_bootstrapped_demos (the number of additional examples generated by the teacher). The bootstrapping process employs the metric to validate demonstrations, including only those that pass the metric in the "compiled" prompt. Advanced: Supports using a teacher program that is a different DSPy program that has compatible structure, for harder tasks.
+BootstrapFewShotWithRandomSearch: Applies BootstrapFewShot several times with random search over generated demonstrations, and selects the best program over the optimization. Parameters mirror those of BootstrapFewShot, with the addition of num_candidate_programs, which specifies the number of random programs evaluated over the optimization, including candidates of the uncompiled program, LabeledFewShot optimized program, BootstrapFewShot compiled program with unshuffled examples and num_candidate_programs of BootstrapFewShot compiled programs with randomized example sets.
+KNNFewShot. Uses k-Nearest Neighbors algorithm to find the nearest training example demonstrations for a given input example. These nearest neighbor demonstrations are then used as the trainset for the BootstrapFewShot optimization process.
+Intro to DSPy for Programming LLMs with Declarative Python — Raja Patnaik
+Automatic Instruction Optimization:
+These optimizers produce optimal instructions for the prompt and, in the case of MIPROv2 can also optimize the set of few-shot demonstrations.
+
+COPRO: Generates and refines new instructions for each step, and optimizes them with coordinate ascent (hill-climbing using the metric function and the trainset). Parameters include depth which is the number of iterations of prompt improvement the optimizer runs over.
+MIPROv2: Generates instructions and few-shot examples in each step. The instruction generation is data-aware and demonstration-aware. Uses Bayesian Optimization to effectively search over the space of generation instructions/demonstrations across your modules.
+SIMBA
+GEPA: Uses LM's to reflect on the DSPy program's trajectory, to identify what worked, what didn't and propose prompts addressing the gaps. Additionally, GEPA can leverage domain-specific textual feedback to rapidly improve the DSPy program. Detailed tutorials on using GEPA are available at dspy.GEPA Tutorials.
+
+
+MIPRO stands for Multi-Iteration Prompt Optimization. DSPy has a built-in optimizer that automatically refines your prompts and few-shot examples using real evaluation metrics.
+
+Think of it as, instead of you manually trying to figure out the perfect way to phrase your instructions (which can be hard!), MIPRO does it for you. You tell MIPRO what you want the LLM to do (the task). For example, “summarize this article.” Then you give MIPRO some examples of what a good result looks like (training data). For instance, you might show a few news articles and good summaries of them. You also tell MIPRO how to judge if the AI is doing a good job (a metric). This could be something like “How accurate is the summary?”
+
+Then, MIPRO goes to work like this:
+
+It tries out different ways of phrasing the instructions (prompts). It doesn’t just pick one; it tries many variations.
+It also figures out good examples to show the LLM to help it learn (few-shot examples). It can even create these examples automatically from the training data you provided.
+It tests how well the LLM performs with each set of instructions and examples, using the “good job” metric you gave it to determine which ones work best.
+It keeps repeating this process—trying new instructions and examples, evaluating them, and improving them over and over again—providing a constant cycle of learning and refinement until it finds the best possible instructions for the AI to do the task well.
+So it lets you:
+
+Define your task (e.g., extract information from text)
+Provide training data and a metric (e.g., accuracy)
+Let DSPy generate, evaluate, and improve prompts over multiple iterations
+It employs a bootstrapping technique to generate few-shot examples from training data automatically. It also uses a “proposer” model that crafts instruction candidates based on dataset summaries, module code, and other heuristics.
+
+MIPRO then performs optimization using techniques like Bayesian Optimization with minibatching * (much like neural network hyperparameter tuning — but targets the space of prompt designs (e.g., instruction wording, example selection), using minibatching to evaluate multiple candidate prompts efficiently and guide the search for optimal configurations.) to explore instruction/example combinations efficiently.
+
+However, there are a few things to keep in mind:
+
+If you don’t have many examples to show MIPRO, it might become too focused on those specific examples and not work well in other situations. This is like the dog only learning to sit when you use a particular treat. I.e., overfitting on small datasets if over-optimized
+This process can take a lot of computer power and time, especially if the LLM is very complex or you have a lot of data.
+If you don’t have a good way to measure if the LLM is doing a good job, MIPRO might optimize for the wrong thing. For example, if you only care about the length of the summary and not the accuracy, MIPRO might only make very short summaries, even if they miss important information. I.e., Sensitive to evaluation metrics and the quality of validation data
+Sometimes, you might still need to manually adjust some of MIPRO’s settings to get the best results. It’s like needing to fine-tune your dog training techniques based on the dog’s personality. Manual tuning of parameters like trials, minibatch size, and temperature may still be needed.
+
+DSPy and MIPRO move LLM development from intuition-based prompt fiddling to structured, testable workflows, just like writing production code. If you’re building serious LLM apps, thinking this way is worth learning.
+
+
+Gepa
+GEPA (Genetic-Pareto) is a framework for optimizing arbitrary systems composed of text components—like AI prompts, code snippets, or textual specs—against any evaluation metric. It employs LLMs to reflect on system behavior, using feedback from execution and evaluation traces to drive targeted improvements. Through iterative mutation, reflection, and Pareto-aware candidate selection, GEPA evolves robust, high-performing variants with minimal evaluations, co-evolving multiple components in modular systems for domain-specific gains.
+GEPA, a reflective prompt optimizer for DSPy. GEPA works by leveraging LM's ability to reflect on the DSPy program's trajectory, identifying what went well, what didn't, and what can be improved. Based on this reflection, GEPA proposes new prompts, building a tree of evolved prompt candidates, accumulating improvements as the optimization progresses. Since GEPA can leverage domain-specific text feedback (as opposed to only the scalar metric), GEPA can often propose high performing prompts in very few rollouts
+GEPA optimizes text components of systems using an evolutionary search algorithm that uses LLM-based reflection for mutating candidates. Most importantly, GEPA leverages task-specific textual feedback (for example, compiler error messages, profiler performance reports, documentation, etc.) to guide the search process
+
+Instead of blindly trying different prompt variations, GEPA:
+
+Analyzes Failures: Uses a reflection LM to understand what went wrong in failed attempts
+Generates Insights: Creates textual feedback explaining improvement opportunities
+Evolves Prompts: Develops new prompt candidates based on reflective insights
+Builds Knowledge: Constructs a graph of improvements, preserving successful patterns
+
+GEPA’s architecture consists of four key components:
+    Student LM: The primary language model being optimized
+    Reflection LM: A separate model that analyzes student performance and provides feedback
+    Feedback System: Domain-specific metrics that provide rich textual feedback
+    Graph Constructor: Builds a tree of prompt improvements using Pareto optimization
+
+
+Another popular framework for prompt otimization
+Opik Agent Optimization
+In Opik, Agent Optimization refers to the systematic process of refining and evaluating the prompts, configurations, 
+and overall design of language model-based applications to maximize their performance. This is an iterative approach leveraging continuous testing, 
+data-driven refinement, and advanced evaluation techniques.
+
+Prompt Optimization is a crucial subset of Agent Optimization. It focuses specifically on improving the instructions (prompts) given to 
+Large Language Models (LLMs) to achieve desired outputs more accurately, consistently, and efficiently. Since prompts are the primary way to 
+interact with and guide LLMs, optimizing them is fundamental to enhancing any LLM-powered agent or application.
+
+Opik Agent Optimizer provides tools for both: directly optimizing individual prompt strings and also for optimizing more complex agentic structures 
+that might involve multiple prompts, few-shot examples, or tool interactions.
+
+MetaPrompt Optimization
+The MetaPrompter is a specialized optimizer designed for meta-prompt optimization. It focuses on improving the structure and effectiveness of prompts 
+through systematic analysis and refinement of prompt templates, instructions, and examples.
+
+The MetaPromptOptimizer is a strong choice when you have an initial instruction prompt and want to iteratively refine its wording, structure, 
+and clarity using LLM-driven suggestions. It excels at general-purpose prompt improvement where the core idea of your prompt is sound but could be phrased better 
+for the LLM, or when you want to explore variations suggested by a reasoning model.
+
+How it works
+The MetaPromptOptimizer automates the process of prompt refinement by using a “reasoning” LLM to critique and improve your initial prompt
+
+
+GEPA Optimization
+GepaOptimizer wraps the external GEPA package to optimize a single system prompt for single-turn tasks. It maps Opik datasets and metrics into GEPA’s expected format, 
+runs GEPA’s optimization using a task model and a reflection model, and returns a standard OptimizationResult compatible with the Opik SDK.
+GepaOptimizer is ideal when you have a single-turn task (one user input → one model response) and you want to optimize the system prompt using a reflection-driven search.
+
+How it works
+The GEPA optimizer companies two key approaches to optimize agents:
+
+Reflection: The optimizer uses the outcomes from evaluations to improve the prompts.
+Evolution: The optimizer uses an evolutionary algorithm to explore the space of prompts.
+
+
+Parameter Optimization
+The ParameterOptimizer uses Bayesian optimization to tune LLM call parameters such as temperature, top_p, frequency_penalty, and other sampling parameters. 
+Unlike other optimizers that modify the prompt itself, this optimizer keeps your prompt unchanged and focuses solely on finding the best parameter configuration 
+for your specific task.
+
+When to Use: Optimize LLM parameters (temperature, top_p) without changing your prompt. Best when you have a good prompt but need to tune model behavior.
+
+Key Trade-offs: Requires defining parameter search space; doesn’t modify prompt text; uses two-phase Bayesian search.
+
+How It Works
+This optimizer uses Optuna, a hyperparameter optimization framework, to search for the best LLM parameters:
+
+Baseline Evaluation: First evaluates your prompt with its current parameters (or default parameters) to establish a baseline score.
+Parameter Space Definition: You define which parameters to optimize and their valid ranges using a ParameterSearchSpace. For example:
+temperature: float between 0.0 and 2.0
+top_p: float between 0.0 and 1.0
+frequency_penalty: float between -2.0 and 2.0
+Global Search Phase:
+Optuna explores the full parameter space using Bayesian optimization (TPESampler by default).
+Tries various parameter combinations to find promising regions.
+Evaluates each combination against your dataset using the specified metric.
+Local Search Phase (optional):
+After global search, focuses on the best parameter region found.
+Performs fine-grained optimization around the best parameters.
+Controlled by local_search_ratio and local_search_scale.
+Parameter Importance Analysis:
+Calculates which parameters had the most impact on performance.
+Uses FANOVA importance (requires scikit-learn) or falls back to correlation-based sensitivity analysis.
+Result: Returns the best parameter configuration found, along with detailed optimization history and parameter importance rankings.
+The optimizer intelligently balances exploration (trying diverse parameters) with exploitation (refining promising configurations) to efficiently find optimal settings.
+
+
+Evolutionary Optimization
+The EvolutionaryOptimizer uses genetic algorithms to refine and discover effective prompts. It iteratively evolves a population of prompts, applying selection, 
+crossover, and mutation operations to find prompts that maximize a given evaluation metric. This optimizer can also perform multi-objective optimization (e.g., maximizing score while minimizing prompt length) and leverage LLMs for more sophisticated genetic operations.
+EvolutionaryOptimizer is a great choice when you want to explore a very diverse range of prompt structures or when you have multiple objectives to optimize for (e.g., performance score and prompt length). Its strength lies in its ability to escape local optima and discover novel prompt solutions through its evolutionary mechanisms, especially when enhanced with LLM-driven genetic operators.
+
+How It Works
+The EvolutionaryOptimizer is built upon the DEAP library for evolutionary computation. The core concept behind the optimizer is that we evolve a population of prompts over multiple generations to find the best one.
+We utilize different techniques to evolve the population of prompts:
+Selection: We select the best prompts from the population to be the parents of the next generation.
+Crossover: We crossover the parents to create the children of the next generation.
+Mutation: We mutate the children to create the new population of prompts.
+We repeat this process for a number of generations until we find the best prompt.
+
+
+Tool optimization
+is a specialized feature that allows you to optimize prompts that use external tools and the Model Context Protocol (MCP). This capability is currently exclusively supported by the MetaPrompt Optimizer and is currently in Beta.
+What is Tool Optimization?
+Tool optimization extends traditional prompt optimization to handle prompts that include:
+MCP tools - Model Context Protocol tools for external integrations (Beta)
+Tool schemas - Structured tool definitions and parameters
+Multi-step workflows - Complex agent workflows involving multiple tools
+
+
+Hierarchical Reflective OptimizationUses hierarchical root cause analysis to systematically improve prompts by analyzing failures in batches, synthesizing findings, and addressing identified failure modes. Best for complex prompts requiring systematic refinement based on understanding why they fail.
+
+Few-shot Bayesian OptimizationSpecifically for chat models, this optimizer uses Bayesian optimization (Optuna) to find the optimal number and combination of few-shot examples (demonstrations) to accompany a system prompt.
+
+
+
+Another famous prompt optimizer library
+PromptWizard
+PromptWizard is a discrete prompt optimization framework that employs a self-evolving mechanism where the LLM generates, critiques, and refines its own prompts and examples, continuously improving through iterative feedback and synthesis. This self-adaptive approach ensures holistic optimization by evolving both the instructions and in-context learning examples for better task performance.
+
+Three key components of PromptWizard are the following :
+
+Feedback-driven Refinement: LLM generates, critiques, and refines its own prompts and examples, continuously improving through iterative feedback and synthesis​
+Critique and Synthesize diverse examples: Generates synthetic examples that are robust, diverse and task-aware. Also it optimizes both prompt and examples in tandem​
+Self generated Chain of Thought (CoT) steps with combination of positive, negative and synthetic examples
+
+
+
+Another famous prompt optimizer library
+Arize Prompt SDK
+Prompt learning is an iterative approach to optimizing LLM prompts by using feedback from evaluations to systematically improve prompt performance. Instead of manually tweaking prompts through trial and error, the SDK automates this process.
+
+The prompt learning process follows this workflow:
+
+
+
+Initial Prompt → Generate Outputs → Evaluate Results → Optimize Prompt → Repeat
+
+
+
+Initial Prompt: Start with a baseline prompt that defines your task
+Generate Outputs: Use the prompt to generate responses on your dataset
+Evaluate Results: Run evaluators to assess output quality
+Optimize Prompt: Use feedback to generate an improved prompt
+Iterate: Repeat until performance meets your criteria
+The SDK uses a meta-prompt approach where an LLM analyzes the original prompt, evaluation feedback, and examples to generate an optimized version that better aligns with your evaluation criteria.
+
+Prompt Learning via SDK | Arize Docs
+
+
+
+Another famous prompt optimizer library
+Promptomatix
+Promptomatix is an AI-driven framework designed to automate and optimize large language model (LLM) prompts. It provides a structured approach to prompt optimization, ensuring consistency, cost-effectiveness, and high-quality outputs while reducing the trial-and-error typically associated with manual prompt engineering.
+
+The framework leverages the power of DSPy and advanced optimization techniques to iteratively refine prompts based on task requirements, synthetic data, and user feedback. Whether you're a researcher exploring LLM capabilities or a developer building production applications, Promptomatix provides a comprehensive solution for prompt optimization.
+
+
+
+Input Processing: Analyzes raw user input to determine task type and requirements
+Synthetic Data Generation: Creates training and testing datasets tailored to the specific task
+Optimization Engine: Uses DSPy or meta-prompt backends to iteratively improve prompts
+Evaluation System: Assesses prompt performance using task-specific metrics
+Feedback Integration: Incorporates human feedback for continuous improvement
+Session Management: Tracks optimization progress and maintains detailed logs
+
+
+
+Another famous prompt optimizer library
+Promptify:
+
+Promptify is an open-source Python library that makes working with prompts easier, more structured, and reproducible.
+
+It allows you to:
+
+📋 Create reusable prompt templates
+🧪 Test multiple prompts with benchmarking
+🔄 Easily switch between different LLMs (OpenAI, Hugging Face, Cohere)
+🔌 Integrate prompt logic into production systems
+
+
+Promptify comes with a pre-defined set of prompts like summarization, QnA, multi label classification, explanation, SQl writer etc. It helps to accelerate the development without crafting the prompt.
+
+
+
+Another famous prompt optimizer library
+AdalFlow
+AdalFlow is “The PyTorch Library to Build and Auto-Optimize Any LLM Task Pipeline.” This powerful, lightweight, and modular library simplifies the development and optimization of any LLM task pipeline. Inspired by PyTorch’s design philosophy, AdalFlow provides minimal abstraction while offering maximum flexibility, allowing developers to create and fine-tune applications across a wide range of tasks. From Generative AI applications such as chatbots, translation, summarization, and code generation to classical NLP tasks like text classification and named entity recognition, AdalFlow is the PyTorch library that helps shape LLMs for any use case.
+
+At its core, AdalFlow relies on two key components: Component for defining pipelines and DataClass for managing data interactions with LLMs. This structure gives developers full control over prompt templates, model choices, and output parsing, ensuring that their pipelines are completely customizable
+
+
+AdalFlow also introduces a unified framework for auto-optimization, enabling token-efficient and high-performing prompt optimization. By defining a Parameter and passing it to the Generator, developers can easily optimize task instructions, few-shot demonstrations, and more, while benefiting from a clear system for diagnosing, visualizing, and training their pipelines.
+
+
+With the AdalComponent and Trainer, developers can build trainable task pipelines that support custom training and validation steps, optimizers, evaluators, and loss functions. AdalFlow provides a comprehensive toolkit for developers who want to fine-tune LLMs across various applications.
+
+
+ the key components of AdalFlow workflows:
+
+AdalComponent: This is the core element where task pipelines are assembled. It supports the integration of optimizers, evaluators, and loss functions. Drawing inspiration from PyTorch Lightning’s LightningModule, the AdalComponent makes it easier to transition into the Trainer, which handles training and validation stages.
+Task Pipeline: A task pipeline in AdalFlow optimizes the flow of data and operations through different stages, including data preprocessing, model training, evaluation, and deployment. Each of these stages can be customized to address specific needs, providing both flexibility and efficiency.
+
+

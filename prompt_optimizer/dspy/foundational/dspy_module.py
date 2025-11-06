@@ -90,7 +90,6 @@ def rag():
 
 
 class Hop(dspy.Module):
-
     def __init__(self, num_docs=10, num_hops=4):
         self.num_docs, self.num_hops = num_docs, num_hops
         self.generate_query = dspy.ChainOfThought('claim, notes -> query')
