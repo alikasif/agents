@@ -557,45 +557,83 @@ In the rapidly evolving landscape of Large Language Model (LLM)-powered agents, 
 
 ## The Core of Agent and Prompt Optimization
 
-At its heart, **agent optimization** is about fine-tuning every aspect of an LLM agent's operation. This includes enhancing how agents reason, access information, and carry out instructions. A fundamental component of this process is **prompt optimization**, which involves systematically adjusting the prompts�the structured text queries or instructions�fed to LLMs. The goal is clear: maximize the relevance, coherence, and accuracy of the LLM's responses for any given task.
+In Opik, Agent Optimization is the process of systematically improving language model–based applications through iterative testing, data-driven refinement, and evaluation. It aims to enhance overall agent performance by fine-tuning prompts, configurations, and design.
 
-Various techniques contribute to prompt optimization:
+A key component of this is Prompt Optimization, which focuses on refining the instructions given to LLMs to improve accuracy, consistency, and efficiency.
 
-- **Prompt Engineering:** Modifying the linguistic patterns and phrasing within prompts
-- **Prompt Chaining:** Structuring a series of sequential queries to guide the LLM through complex tasks
-- **Prompt Distillation:** Extracting and refining the most essential instructions to create concise and effective prompts
+The Opik Agent Optimizer supports both — optimizing individual prompt strings and more complex, multi-prompt or tool-integrated agent architectures.
 
 Modern frameworks like Opik apply these optimization principles across an agent's entire architecture, impacting modules like memory, planning, and output generation. This holistic approach aims to foster adaptivity, efficiency, and robustness, crucial for agents operating in dynamically evolving dialogue or workflow scenarios.
 
-## Tools for Precision: Direct and Structural Prompt Optimization
 
-Prompt optimization can be categorized into two primary approaches:
+## Overview of Opik Optimizers
 
-### Direct Prompt Optimization
+### **1. EvolutionaryOptimizer**
 
-This focuses on *content-level refinement*. Techniques here include paraphrasing, manipulating prompt templates, or weighting keywords, often guided by automated metrics such as BLEU, ROUGE, or task-specific F1 scores. Opik integrates tools like OpenPrompt and PromptSource to benchmark and evaluate these content-level prompt adjustments, ensuring measurable improvements.
+Uses **genetic algorithms** to evolve and discover high-performing prompts.
 
-### Structural Prompt Optimization
-
-Beyond content, this approach delves into *architectural design*. It leverages tree-structured or graph-structured prompt architectures, optimizing the dependencies between parent and child prompts and the overall compositional logic. Tools like AutoPrompt, which generates optimized prompts through gradient-guided token modifications, exemplify this structural refinement.
-
-## Meta-Learning for Prompts: MetaPromptOptimization
-
-Opik takes prompt optimization a step further by conceptualizing it as a **meta-learning problem**�a system that learns how to learn better prompts. The framework introduces a **MetaPrompter** module, which employs advanced techniques like reinforcement learning or evolutionary strategies to uncover optimal prompting strategies across a diverse range of tasks.
-
-This meta-learning extends to **systematic template refinement**. Here, methods such as reinforcement learning from human feedback (RLHF) and sophisticated search algorithms (e.g., grid or random search within the template component space) are used to iteratively enhance prompt templates. The focus is on improving sample efficiency and generalizability, ultimately yielding templates that are robust to shifts in domain and variations in user intent.
-
-## GEPA Optimization: Goal-Explicit Planning and Adaptation
-
-A cornerstone of Opik's dynamic agent behavior is **GEPA (Goal-Explicit Planning and Adaptation)**. GEPA is designed to encode task-specific rewards and constraints directly into the agent's planning modules, guiding them using policy gradients or evolutionary strategies.
-
-Within the Opik framework, LLMs play a pivotal role in GEPA by facilitating goal decomposition and mapping subgoals. This allows the agent to dynamically adapt its workflows in response to real-time environment feedback. By integrating GEPA, Opik can optimize agent plans and execution traces not only for functional performance but also for emergent properties like explainability and resource efficiency, creating more sophisticated and versatile LLM agents.
+* **How it works:** Iteratively evolves a population of prompts through *selection*, *crossover*, and *mutation*, powered by the DEAP library.
+* **Supports:** Multi-objective optimization (e.g., maximize score & minimize prompt length) and LLM-driven genetic operations.
+* **Best for:** Exploring diverse prompt structures or escaping local optima in complex search spaces.
 
 ---
 
-# Prompt Optimization Frameworks: Tools for Systematic LLM Improvement
+### **2. GepaOptimizer**
 
-The rise of Large Language Models (LLMs) has revolutionized how we interact with AI, opening doors to unprecedented applications. However, harnessing the full potential of these powerful models often hinges on one critical factor: the prompt. Crafting effective prompts�prompt engineering�has become an art and a science, directly influencing the quality, relevance, and accuracy of LLM outputs. As LLMs grow more sophisticated, so too does the need for advanced tools to optimize and manage prompts efficiently.
+Wraps the **GEPA framework** for optimizing single-turn tasks using **reflection-driven** and **evolutionary** search.
+
+* **How it works:** Combines reflection (learning from evaluation outcomes) with evolution (iterative improvement).
+* **Best for:** Optimizing a single system prompt where one user input leads to one model response.
+
+---
+
+### **3. HierarchicalReflectiveOptimizer**
+
+Performs **root cause analysis** on prompt failures to make targeted, data-driven improvements.
+
+* **How it works:** Analyzes evaluation results in parallel batches, identifies recurring failure modes, and updates prompts to address specific weaknesses.
+* **Best for:** Complex or mature prompts that have been manually refined but still need precise, failure-focused improvements.
+
+---
+
+### **4. MetaPromptOptimizer**
+
+A specialized **meta-optimizer** for refining prompt templates, examples, and instructions.
+
+* **How it works:** Uses a reasoning LLM to critique and rewrite the initial prompt, improving structure, clarity, and phrasing.
+* **Best for:** General-purpose prompt polishing — when the core logic of the prompt is good but needs better wording or formatting.
+
+---
+
+### **5. ParameterOptimizer**
+
+Uses **Bayesian optimization** (via Optuna) to tune LLM **parameters** rather than prompt text.
+
+* **How it works:**
+
+  1. Evaluates baseline performance.
+  2. Searches the parameter space (e.g., temperature, top_p, frequency_penalty).
+  3. Performs global and local optimization phases.
+  4. Analyzes parameter importance.
+* **Best for:** When you have a strong prompt and want to fine-tune model behavior without altering text.
+
+---
+
+### **In Summary**
+
+| Optimizer                           | Focus                        | Technique              | Ideal Use Case                     |
+| ----------------------------------- | ---------------------------- | ---------------------- | ---------------------------------- |
+| **EvolutionaryOptimizer**           | Prompt discovery             | Genetic algorithms     | Explore diverse prompt variations  |
+| **GepaOptimizer**                   | Single-turn prompt tuning    | Reflection + Evolution | Single input → single output tasks |
+| **HierarchicalReflectiveOptimizer** | Failure-driven prompt repair | Root cause analysis    | Complex, failing prompts           |
+| **MetaPromptOptimizer**             | Structural prompt refinement | LLM-based critique     | Improve clarity and tone           |
+| **ParameterOptimizer**              | LLM parameter tuning         | Bayesian optimization  | Tune temperature, top_p, etc.      |
+
+
+
+---
+
+# Various Other Prompt Optimization Frameworks: Tools for Systematic LLM Improvement
 
 Manually iterating on prompts can be a time-consuming and often hit-or-miss endeavor. This is where specialized prompt optimizer libraries and frameworks come into play. These tools provide structured approaches, automation, and analytics to elevate prompt engineering from an artisanal craft to a systematic, data-driven discipline. They help engineers, researchers, and developers ensure their LLM interactions are not just good, but consistently great.
 
