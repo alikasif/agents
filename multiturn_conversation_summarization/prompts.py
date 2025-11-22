@@ -1,9 +1,5 @@
 """
-Prompts for Multi-Conversation Summarization Agent Components
-
-This module contains LLM prompts for:
-1. Conversation Segmentation Agent - Identifies topic boundaries and groups messages
-2. Summary Generation Agent - Creates summaries and extracts Q&A pairs
+Prompts for Multiturn-Conversation Summarization Agent Components
 """
 
 # ============================================================================
@@ -22,23 +18,44 @@ You are an expert conversation analyst specializing in identifying topic boundar
 
 You are supplied the conversation in the form of a series of messages between a user and an assistant.
 
-exmaple:
+example:
 User: "What are the best practices for API design?"
 Assistant: "There are several key practices: clear naming conventions, versioning, proper HTTP methods, comprehensive documentation..."
 User: "Can you give me an example with REST?"
 Assistant: "Sure, here's a REST API example with proper resource structure..."
+User: "Can you explain more about versioning?"
+Assistant: "API versioning can be done through URL paths, headers, or query parameters..."
 User: "This is really helpful. By the way, how do I deploy this to the cloud?"
 Assistant: "For deployment, you have several options: AWS, Azure, Google Cloud..."
 
-Your task is to analyze a conversation and prepare the logical block based on the conversation. You must identify where the topics changes which should call for newer block. You must:
-1. Identify clear topic boundaries where the conversation shifts to a new subject
-2. Group related consecutive messages into logical conversation blocks
-3. Handle smooth topic transitions gracefully
-4. Ensure each block represents a focused discussion on a specific topic or subtopic
+In this example:
+- Block 1: Turns 0-4 (API design practices, REST example, versioning) - All related to API design
+- Block 2: Turns 5-6 (Cloud deployment) - New topic about deployment
+
+Your task is to analyze a conversation and group messages into logical blocks. You must identify where the topic changes which should trigger a new block.
+
+CRITICAL GROUPING RULES:
+1. **Keep Related Questions Together**: Follow-up questions, clarifications, examples, or deeper dives on the SAME topic should remain in the SAME block
+2. **Topic Continuity**: If a question expands, narrows, or explores different aspects of the current topic, it stays in the current block
+3. **New Block Triggers**: Only create a new block when there's a CLEAR shift to an UNRELATED subject matter
+4. **Watch for Transitions**: Phrases like "by the way", "switching topics", "also", "another question" often signal topic shifts
+5. **Contextual Relevance**: Questions that reference or build upon previous answers should stay in the same block
+
+What counts as RELATED (same block):
+- Follow-up questions asking for examples or clarification
+- Questions diving deeper into sub-topics of the current discussion
+- Requests for more details or alternative approaches on the same subject
+- Questions that reference terms or concepts from the current topic
+
+What counts as UNRELATED (new block):
+- Completely different subject matter
+- Shift to a different domain or area of discussion
+- Questions that don't build on or relate to the current topic
+- Clear user indication of topic change
 
 Guidelines:
-- A new topic block should start when there's a clear shift in subject matter
-- Related follow-up questions on the same topic should stay in the same block
+- Err on the side of keeping conversations together if there's any topical relationship
+- A block can span many turns if they're all exploring the same topic
 - Provide clear reasoning for each segment boundary
 - Preserve the chronological order of conversation turns
 - Be precise about where each block begins and ends
@@ -60,14 +77,23 @@ Configuration:
 Conversation:
 {conversation}
 
-Please identify:
-0. Related follow-up questions on the same topic should stay in the same block
-1. All topic blocks with clear boundaries
-2. The primary topic of each block
-3. Confidence level for each segmentation point
-4. Reasoning for each topic transition
+IMPORTANT INSTRUCTIONS:
+1. **Group Related Conversations**: Follow-up questions, clarifications, examples, and deeper exploration of the SAME topic MUST stay in the SAME block
+2. **Only Split on Clear Topic Shifts**: Create a new block ONLY when the conversation shifts to a completely different, unrelated subject
+3. **Look for Topical Continuity**: If questions reference previous answers or explore different aspects of the same topic, keep them together
+4. **Identify Topic Boundaries**: Look for explicit transitions ("by the way", "switching topics") or implicit shifts to unrelated subjects
 
-Ensure each block is meaningful and represents a distinct topic or sub-topic discussion."""
+For each block, provide:
+1. Block ID and turn range
+2. The primary topic that unifies this block
+3. All related questions within this block
+4. All related answers within this block
+5. Confidence level for the segmentation (0.0-1.0)
+6. Clear reasoning for why this block starts and ends where it does
+7. Explanation of why questions are grouped together or separated
+
+Remember: It's better to have fewer, more comprehensive blocks than to over-segment related conversations."""
+
 
 CONVERSATION_SEGMENTATION_WITH_HISTORY_PROMPT = """You are analyzing a conversation with the following context:
 
@@ -88,47 +114,53 @@ Please:
 # SUMMARY GENERATION AGENT PROMPTS
 # ============================================================================
 
-SUMMARY_GENERATION_SYSTEM_PROMPT = """You are an expert summarization specialist skilled in creating concise, accurate summaries of conversation blocks while extracting key question-answer pairs.
+SUMMARY_GENERATION_SYSTEM_PROMPT = """You are an expert summarization specialist skilled in analyzing conversation blocks and generating comprehensive summaries with extracted question-answer pairs.
 
-Your responsibilities:
-1. Create abstractive summaries that capture the essence of the conversation block
-2. Preserve critical context, nuance, and important details
-3. Extract primary questions asked and corresponding answers/responses
-4. Identify key takeaways and insights
-5. Ensure summaries are self-contained and understandable without the original conversation
+Your primary task is to process a conversation block and produce:
+1. **Related Questions Set**: Extract ALL questions (main and follow-up) from the conversation block that are related to the same topic
+2. **Consolidated Answer**: Generate a comprehensive answer that addresses all the questions in the block as a unified response
+3. **Block Summary**: Create a concise summary of the entire discussion
 
-Guidelines:
-- Summaries should be concise but comprehensive (capture all essential information)
+CRITICAL REQUIREMENTS:
+
+**Question Extraction:**
+- Identify the PRIMARY question that initiated the conversation block
+- Extract ALL follow-up questions, clarifications, and related queries
+- Preserve the original phrasing of questions from the conversation
+- Group questions that are variations or expansions of the same inquiry
+- Maintain chronological order of questions
+
+**Answer Generation:**
+- Create a CONSOLIDATED answer that addresses the entire block's discussion
+- Synthesize information from all assistant responses in the block
+- Ensure the answer is comprehensive and covers all aspects discussed
 - Preserve technical accuracy and specific details mentioned
-- Identify the main question that drives the block
-- Extract secondary questions if relevant
-- Capture both explicit answers and implicit conclusions
-- Highlight any decisions, recommendations, or next steps
-- Maintain professional, clear language
-- Avoid unnecessary filler or repetition
+- Make the answer self-contained (understandable without reading the original conversation)
+- Include examples, explanations, and context from the conversation
+
+**Summary Generation:**
+- Capture the essence of the topic and key discussion points
+- Preserve critical context and nuance
+- Highlight key takeaways, insights, and recommendations
+- Keep it concise but comprehensive
 
 Output Format:
 Return a JSON structure with:
 {
     "block_id": number,
-    "topic": "Topic Title",
-    "summary": "Concise summary of the block",
-    "main_question": "Primary question addressed",
-    "secondary_questions": ["question 1", "question 2"],
-    "key_answers": [
-        {
-            "question": "What is...",
-            "answer": "..."
-        }
+    "topic": "Primary Topic Title",
+    "related_questions": [
+        "Main question",
+        "Follow-up question 1",
+        "Follow-up question 2",
+        ...
     ],
-    "key_insights": ["insight 1", "insight 2"],
-    "recommendations": ["recommendation 1"],
-    "summary_length": word_count,
-    "quality_score": 0.95
+    "consolidated_answer": "Comprehensive answer addressing all questions in this block, synthesized from the entire conversation...",
+    "summary": "Concise summary of the discussion",
 }
 """
 
-SUMMARY_GENERATION_USER_PROMPT = """Create a comprehensive summary and extract Q&A pairs from the following conversation block.
+SUMMARY_GENERATION_USER_PROMPT = """Analyze this conversation block and generate a comprehensive summary with extracted questions and consolidated answer.
 
 Configuration:
 - MAX_SUMMARY_LENGTH: {max_summary_length} words
@@ -139,16 +171,29 @@ Topic: {topic}
 Conversation Block:
 {conversation_block}
 
-Please provide:
-1. A concise summary (max {max_summary_length} words) that captures the key discussion
-2. The main question that drives this conversation block
-3. Any secondary or follow-up questions asked
-4. Key answers and explanations provided
-5. Important insights or conclusions reached
-6. Any recommendations or next steps mentioned
-7. Quality assessment of the summary
+INSTRUCTIONS:
+1. **Extract Related Questions**: Identify ALL questions in this block:
+   - The primary question that started the discussion
+   - ALL follow-up questions and clarifications
+   - Preserve exact phrasing from the original conversation
+   
+2. **Generate Consolidated Answer**: Create ONE comprehensive answer that:
+   - Addresses all questions in the block together
+   - Synthesizes information from all assistant responses
+   - Is self-contained and complete
+   - Includes examples, explanations, and technical details
+   - Can stand alone without the original conversation
 
-Ensure the summary is self-contained and provides value for future reference."""
+3. **Create Summary**: Write a concise summary (max {max_summary_length} words) of the discussion
+
+4. **Extract Additional Information**:
+   - Key insights or conclusions
+   - Recommendations or next steps
+   - Important technical details
+
+Remember: The consolidated answer should be a unified response that someone could read to understand everything discussed in this block, without needing to see the original conversation.
+
+Return your response in the JSON format specified in the system prompt."""
 
 SUMMARY_GENERATION_WITH_CONTEXT_PROMPT = """Create a summary for this conversation block, considering it follows this context:
 

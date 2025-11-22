@@ -8,7 +8,6 @@ import asyncio
 from tools import google_search
 from data_classes import ChatConversation
 
-load_dotenv(override=True)
 
 async def chat_session(session_id: str):
 
@@ -63,9 +62,10 @@ async def chat_session(session_id: str):
     all_conv = "\n".join([f"{chat.role}: {chat.content}" for chat in chats])
     return all_conv
 
-async def summary_agent(conversation: str):
 
-    print("Starting summarization agent...")
+async def segmentation_agent(conversation: str):
+
+    print("Starting segmentation agent...")
 
     agent = Agent(
             name="Assistant",
@@ -73,16 +73,38 @@ async def summary_agent(conversation: str):
             model=os.getenv("OPENAI_MODEL"),
     )
 
-    print("Summary agent is ready.\n")
+    print("Segmentation agent is ready.\n")
 
     user_prompt = get_segmentation_prompt(conversation, 1, .8)
     result = await Runner.run(agent, user_prompt)
-    print("summarization output:\n\n",result.final_output)
+    print("segmentation output:\n\n",result.final_output)
+    return result.final_output
 
+
+async def summary_agent(conversation: str):
+
+    print("Starting summary agent...")
+
+    agent = Agent(
+            name="Assistant",
+            instructions=SUMMARY_GENERATION_SYSTEM_PROMPT,
+            model=os.getenv("OPENAI_MODEL"),
+    )
+
+    print("Summary agent is ready.\n")
+
+    user_prompt = get_summary_generation_prompt(conversation, 1, .8)
+    result = await Runner.run(agent, user_prompt)
+    print("summary output:\n\n",result.final_output)
+    return result.final_output
+
+
+load_dotenv(override=True)
 
 if __name__ == "__main__":
     #asyncio.run(conv_agent())
     all_conv = asyncio.run(chat_session("conversation_123"))
-    asyncio.run(summary_agent(all_conv))
+    conv_block = asyncio.run(segmentation_agent(all_conv))
+    summary = asyncio.run(summary_agent(conv_block))
 
 
