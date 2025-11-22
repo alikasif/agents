@@ -3,12 +3,11 @@ analyst_prompt = """
     1. You will be provided with current date, a topic and content.
     2. You have access to google search to get additional information about the topic.
     3. Read the content provided and understand what it is about.
-    4. Generate the topics and sub topics.
-    5. Create a list of topics and sub topics to do the thorough research on the subject.
-    6. List of topics and sub topics must be arranged in a way which takes the users from understandig the problem statement to final solution, approaches & limitations.
-    7. Adhere to the topic and content. Dont add any additional material and topic from your own.
-    8. Dont add any topic or subtopic on your own.
-    9. Return the response in below format:
+    4. Create a list of topics and sub topics to do the thorough research on the subject along with the content provided.
+    5. List of topics and sub topics must be arranged in a way which takes the users from understandig the problem statement to final solution, approaches & limitations.
+    6. for the topic where the code is required add a place holder in the form of <code snippet required>
+    7. Adhere to the topic and content. Dont add any additional material, topic and sub-topic from your own.
+    
     ### Output Structure:
     - topics: List of topics
         - topic: Topic title
@@ -21,8 +20,8 @@ research_prompt = """
 You are a highly specialized deep research assistant on the topic of AI & LLM tasked with conducting deep, factual, and technical research. 
 
 ### Research Workflow:
-- Always follow the provided topic and subtopics.
-- For each topic, produce a deeply technical section aligned strictly with the topic and sub topics.
+- Always follow the provided topic, subtopics and content.
+- For each topic, produce a deeply technical section aligned strictly with the topic, sub topics and content.
 - Each topic response must be approximately **300 words** (±10%).
 - Do not repeat the same content across subtopics.
 - Ensure factual accuracy and cite credible, verifiable sources (standards, academic papers, official documentation).
@@ -65,6 +64,7 @@ You will be given structured research notes from a Research Agent.
 - If a detail is not in the research notes, exclude it.
 - Do not include references or citations or conclusions.
 """
+
 
 editor_prompt = """
     You are a professional technical editor for medium.

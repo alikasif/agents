@@ -14,7 +14,6 @@ from structured_output import *
 from tools import *
 import os
 from openai import AsyncOpenAI
-from agents.agent_output import AgentOutputSchema
 
 
 def get_model(prefix= "OPENAI"):        
@@ -61,6 +60,9 @@ class ResearchAgent:
                 \n
                 Subtopics:
                 {chr(10).join(f"- {s}" for s in topic.sub_topics)}
+                \n
+                Content:
+                {topic.content}
                 """
         return query
 
@@ -89,7 +91,7 @@ class EditorAgent:
         
         self.editor_agent = Agent(
             name="AI/LLM Technical Editor",
-            model=get_model("ANTHROPIC"),
+            model=get_model(),
             instructions=editor_prompt,
             tools=[google_search]
         )

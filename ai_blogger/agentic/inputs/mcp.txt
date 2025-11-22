@@ -1,0 +1,226 @@
+
+MCP = Model Context Protocol
+
+What is Model context protocal (MCP) and why isit needed?
+    The Model Context Protocol (MCP) serves as a standardization layer for AI applications to communicate effectively with external services such as tools, databases and predefined templates.
+    An AI agent is a system or program that is capable of autonomously performing tasks on behalf of a user or another system. It performs them by designing its workflow and by using available tools. 
+    Multiagent systems consist of multiple AI agents working collectively to perform tasks on behalf of a user or another system.
+
+    You can think of MCP for AI applications to serve the same purpose as a USB-C port serves for hardware.1 
+    This analogy highlights the adaptability USB-C ports provide for connecting hardware comparing it to the standardized way in which various tools and data sources provide context to AI models through MCP.
+
+    LLMs GPT, gemini are limited in their capabilities when deployed on their own. Without any AI tools, LLMs though skilled in several areas like text prediction, QnA and sentiment analysis  
+    but  cannot successfully run any user query that requires access to real-time information. 
+    To provide LLMs with the opportunity to produce more meaningful results, tool integration can be introduced. Providing external tools such as web searches, datasets and APIs, 
+    allows the LLM to expand its capabilities beyond its training data.
+
+    Large language models (LLMs) are powerful, but they have two major limitations: their knowledge is frozen at the time of their training, and they can't interact with the outside world. 
+    This means they can't access real-time data or perform actions like booking a meeting or updating a customer record. 
+
+    The Model Context Protocol (MCP) is an open standard designed to solve this. Introduced by Anthropic in November 2024, MCP provides a secure and standardized "language" for LLMs to 
+    communicate with external data, applications, and services. It acts as a bridge, allowing AI to move beyond static knowledge and become a dynamic agent that can retrieve current information 
+    and take action, making it more accurate, useful, and automated.
+
+    The MCP creates a standardized, two-way connection for AI applications, allowing LLMs to easily connect with various data sources and tools. 
+    MCP builds on existing concepts like tool use and function calling but standardizes them. This reduces the need for custom connections for each new AI model and external system. 
+    It enables LLMs to use current, real-world data, perform actions, and access specialized features not included in their original training.
+
+    While tools give Agents the power to go beyond the LLM training boundry, it does introduces a challenges of integrating with multiple systems with different protocol and standards.
+    Imagine an electrical circuit connecting a motor to various power sources. MCP is like the wiring and switchboard of this circuit; it decides what electrical current (information) flows to the motor (AI model). Tool output or model context can be compared to the input current—it is the voltage flowing from a source of power and can include memory, tools and past findings.
+    As the switchboard, MCP decides which sources of power (tool output or context) to connect and when to do so, regulates the current (stream of information), filters and prioritizes inputs. 
+    It does that to ensure that only relevant wires are energized (the relevant context is loaded) and manages the circuit’s timing and routing to not overload the system.
+    Just as a well-designed circuit prevents overload and ensures efficient power usage, MCP serves as a connector to facilitate efficient, relevant and structured use of context for optimal AI model performance.
+
+    MCP establishes a new open source standard for AI engineers to agree upon. However, standards are not a new concept in the software industry. For example, REST APIs are industry-standard, 
+    offering consistent data exchange between applications through HTTP requests aligned with REST design principles.
+    Similarly, MCP unifies the LLM and external services to communicate efficiently by setting a standard. This standard allows for “plug-and-play” tool usage rather than writing code for custom 
+    integration of each tool.
+    MCP is not an agent framework, but a standardized integration layer for agents accessing tools. It complements agent orchestration frameworks. MCP can complement agent orchestration frameworks 
+    like LangChain, LangGraph, BeeAI, LlamaIndex and crewAI, but it does not replace them; MCP does not decide when a tool is called and for what purpose.
+    MCP simply provides a standardized connection to streamline tool integration.3 Ultimately, the LLM determines which tools to call based on the context of the user’s request.
+
+MCP architecture
+    MCP is a stateful protocol that requires lifecycle management. The purpose of lifecycle management is to negotiate the capabilities that both client and server support. 
+    Detailed information can be found in the specification, and the example showcases the initialization sequence.
+
+    Components:
+        MCP Host: The AI application that coordinates and manages one or multiple MCP clients. An AI application receives the user requests and seeks access to context through the MCP. 
+        This integration layer can include IDEs such as Cursor or Claude Desktop. It contains the orchestration logic and can connect each client to a server.4
+        The LLM is contained within the MCP host, an AI application or environment such as an AI-powered IDE or conversational AI. This is typically the user's interaction point, 
+        where the MCP host uses the LLM to process requests that may require external data or tools.
+
+
+        MCP Client: A component that maintains a connection to an MCP server and obtains context from an MCP server for the MCP host to use. Communication in the MCP ecosystem between the host and server 
+        must go through a client. This client exists within the host and converts user requests into a structured format that the open protocol can process. Multiple clients can exist with a singular 
+        MCP host but each client has a 1:1 relationship with an MCP server.
+        The MCP client, located within the MCP host, helps the LLM and MCP server communicate with each other. It translates the LLM's requests for the MCP and converts the MCP's replies for the LLM. 
+        It also finds and uses available MCP servers.
+
+        MCP Server: A program that provides context to MCP clients. The external service that provides the context to the LLM by converting user requests to server actions.
+        MCP servers can execute locally or remotely. For example, when Claude Desktop launches the filesystem server, the server runs locally on the same machine because it uses the STDIO transport.
+        This is commonly referred to as a “local” MCP server. The official Sentry MCP server runs on the Sentry platform, and uses the Streamable HTTP transport. This is commonly referred to as a “remote” MCP server.
+        It helps LLMs by connecting to external systems like databases and web services, translating their responses into a format the LLM can understand which helps developers provide diverse functionalities.
+
+    Communication Layers
+        Data layer: Defines the JSON-RPC based protocol for client-server communication, including lifecycle management, and core primitives, such as tools, resources, prompts and notifications.
+        The data layer implements a JSON-RPC 2.0 based exchange protocol that defines the message structure and semantics. 
+
+        This layer includes:
+        Lifecycle management: Handles connection initialization, capability negotiation, and connection termination between clients and servers
+        Server features: Enables servers to provide core functionality including tools for AI actions, resources for context data, and prompts for interaction templates from and to the client
+        Client features: Enables servers to ask the client to sample from the host LLM, elicit input from the user, and log messages to the client
+        Utility features: Supports additional capabilities like notifications for real-time updates and progress tracking for long-running operations
+
+        Transport layer: Defines the communication mechanisms and channels that enable data exchange between clients and servers, including transport-specific connection establishment, message framing, 
+        and authorization. The transport layer manages communication channels and authentication between clients and servers. It handles connection establishment, message framing, and secure 
+        communication between MCP participants.
+        MCP supports two transport mechanisms:
+        Stdio transport: Uses standard input/output streams for direct process communication between local processes on the same machine, providing optimal performance with no network overhead.
+        Streamable HTTP transport: Uses HTTP POST for client-to-server messages with optional Server-Sent Events for streaming capabilities. This transport enables remote server communication 
+        and supports standard HTTP authentication methods including bearer tokens, API keys, and custom headers. MCP recommends using OAuth to obtain authentication tokens.
+        The transport layer abstracts communication details from the protocol layer, enabling the same JSON-RPC 2.0 message format across all transport mechanisms.
+
+    Primitives
+        MCP primitives are the most important concept within MCP. They define what clients and servers can offer each other. These primitives specify the types of contextual information that can 
+        be shared with AI applications and the range of actions that can be performed.
+        
+        MCP defines three core primitives that servers can expose:
+        Tools: Executable functions that AI applications can invoke to perform actions (e.g., file operations, API calls, database queries)
+        Resources: Data sources that provide contextual information to AI applications (e.g., file contents, database records, API responses)
+        Prompts: Reusable templates that help structure interactions with language models (e.g., system prompts, few-shot examples)
+        
+        Each primitive type has associated methods for discovery (*/list), retrieval (*/get), and in some cases, execution (tools/call). MCP clients will use the */list methods to discover available primitives. 
+        
+        For example, a client can first list all available tools (tools/list) and then execute them. This design allows listings to be dynamic.
+        As a concrete example, consider an MCP server that provides context about a database. It can expose tools for querying the database, a resource that contains the schema of the database, and a 
+        prompt that includes few-shot examples for interacting with the tools.
+        
+        MCP also defines primitives that clients can expose. These primitives allow MCP server authors to build richer interactions.
+        Sampling: Allows servers to request language model completions from the client’s AI application. This is useful when servers’ authors want access to a language model, but want to stay model 
+        independent and not include a language model SDK in their MCP server. They can use the sampling/complete method to request a language model completion from the client’s AI application.
+        Elicitation: Allows servers to request additional information from users. This is useful when servers’ authors want to get more information from the user, or ask for confirmation of an action. 
+        They can use the elicitation/request method to request additional information from the user.
+        Logging: Enables servers to send log messages to clients for debugging and monitoring purposes.
+    
+    Notifications: The protocol supports real-time notifications to enable dynamic updates between servers and clients. For example, when a server’s available tools change—such as when new functionality 
+    becomes available or existing tools are modified—the server can send tool update notifications to inform connected clients about these changes. 
+    Notifications are sent as JSON-RPC 2.0 notification messages (without expecting a response) and enable MCP servers to provide real-time updates to connected clients.
+
+
+MCP Client server interaction
+    Initialization -> Tool discovery -> Tool execution -> Real time updates (Notifications)
+
+    Initialization: MCP begins with lifecycle management through a capability negotiation handshake.the client sends an initialize request to establish the connection and negotiate supported features
+    After successful initialization, the client sends a notification to indicate it’s ready.During initialization, the AI application’s MCP client manager establishes connections to configured servers 
+    and stores their capabilities for later use. The application uses this information to determine which servers can provide specific types of functionality (tools, resources, prompts) and 
+    whether they support real-time updates.
+
+    Tool discover: Now that the connection is established, the client can discover available tools by sending a tools/list request. This request is fundamental to MCP’s tool discovery mechanism — 
+    it allows clients to understand what tools are available on the server before attempting to use them. Each tool has name, title, description, inputSchema. 
+    The AI application fetches available tools from all connected MCP servers and combines them into a unified tool registry that the language model can access. 
+    This allows the LLM to understand what actions it can perform and automatically generates the appropriate tool calls during conversations.
+
+    Tool execution: The client can now execute a tool using the tools/call method. This demonstrates how MCP primitives are used in practice: after discovering available tools, 
+    the client can invoke them with appropriate arguments. When the language model decides to use a tool during a conversation, the AI application intercepts the tool call, routes it to 
+    the appropriate MCP server, executes it, and returns the results back to the LLM as part of the conversation flow. This enables the LLM to access real-time data and perform actions in the external world.
+
+    Notifications: MCP supports real-time notifications that enable servers to inform clients about changes without being explicitly requested. This demonstrates the notification system, 
+    a key feature that keeps MCP connections synchronized and responsive. When the AI application receives a notification about changed tools, it immediately refreshes its tool registry and updates 
+    the LLM’s available capabilities. This ensures that ongoing conversations always have access to the most current set of tools, and the LLM can dynamically adapt to new functionality as it becomes available.
+
+
+What are different modes to connect to Model context protocal (MCP) server? with examples
+    Stdio, SSE, StreamableHTTP, WebSocket
+
+
+    Local MPC server connection mechanism (preferred)
+        Stdio: Uses standard input/output streams for direct process communication between local processes on the same machine, providing optimal performance with no network overhead.
+        primarily used for inter-process communication within the same system. It allows a client application to send data to a server application through the standard input and receive responses via 
+        the standard output streams.STDIO Transport utilizes standard input and output streams for communication. It’s particularly suitable for command-line tools and local integrations where the client 
+        and server operate within the same process.
+        The client launches the MCP server as a subprocess. The server reads JSON-RPC messages from its standard input (stdin) and sends messages to its standard output (stdout).Messages may be JSON-RPC requests, 
+        notifications, responses—or a JSON-RPC batch containing one or more requests and/or notifications.
+
+    Remote MCP server connection mechanism:
+        SSE: The Server-Sent Events (SSE) transport enables HTTP-based communication between the MCP server and clients. It uses SSE for server-to-client messages and HTTP POST for client-to-server messages.
+        SSE as a standalone transport is deprecated as of protocol version 2024-11-05. It has been replaced by Streamable HTTP, which incorporates SSE as an optional streaming mechanism. 
+
+        When remote MCP was first introduced, it relied on Server-Sent Events (SSE) as its transport layer. This approach required two separate endpoints:
+        An SSE endpoint (/sse) that established a persistent connection for the client to receive responses
+        A separate messages endpoint (/sse/messages) where clients would send requests
+
+        This dual-endpoint architecture worked, but it was like trying to have a conversation using two phones—one for speaking and one for listening. The design introduced several significant challenges:
+        Connection management complexity: Maintaining two separate connections increased implementation complexity
+        Scalability limitations: Long-lived SSE connections are resource-intensive and challenging to scale
+        Connection reliability: If the SSE connection dropped during a long-running operation, responses would be lost
+        Implementation overhead: Servers and clients needed logic to coordinate between these separate connections
+
+        StreamableHTTP: In the Streamable HTTP transport, the server operates as an independent process that can handle multiple client connections. This transport uses HTTP POST and GET requests.
+        The server MUST provide a single HTTP endpoint path (hereafter referred to as the MCP endpoint) that supports both POST and GET methods. For example, this could be a URL like https://example.com/mcp.
+        Streamable HTTP offers a more elegant solution by enabling bidirectional communication through a single endpoint. This new transport mechanism was designed to address the limitations of the SSE 
+        approach while maintaining backward compatibility. 
+
+        Rather than managing two separate connections, clients now interact with MCP servers through a single endpoint (typically /mcp)
+        Dynamically adapt based on the interaction needs:
+            For simple, quick operations, it behaves like a standard HTTP request/response
+            For long-running operations or streaming responses, it can automatically upgrade to an SSE-like streaming connection
+        Bidirectional communication- Servers can send notifications or request additional information from clients on the same connection, enabling more sophisticated interaction patterns.
+
+
+How are Model context protocal (MCP) server run? local vs remote?
+    Local MCP servers run on the same machine as the MCP client and communicate primarily via stdio (Standard Input/Output). This is a simple and effective approach for local integrations, 
+    such as accessing local files or running local scripts. Local MCP Servers use the stdio transport when both client and server run on the same machine.
+    They have direct access to local resources like files and databases without sending data over the internet. 
+    This approach is similar to running a development server on your laptop. Local MCP servers keep sensitive data within your infrastructure. Nothing leaves your system unless specifically programmed to do so.
+    This approach provides maximum control over how data is accessed and processed.Local MCP servers avoid network latency since everything happens on the same machine. This results in faster responses, 
+    particularly for tools that access local resources like files or databases.
+
+    When to choose local MCP?
+    Local MCP servers excel in specific situations where control, privacy, or simplicity are priorities.
+    Development and testing: During development, local MCP provides a fast feedback loop. You can quickly modify tools, test changes, and debug issues without remote deployment steps.
+    Sensitive data handling: When working with confidential information that shouldn't leave your system, local MCP keeps everything contained. This applies to:
+    Personal financial data, Health information, Proprietary business data, Information subject to strict compliance requirements
+    Offline operation: Local MCP works without internet access, making it suitable for environments with limited connectivity or air-gapped systems.
+    Simple personal tools: For individual use cases like accessing local files or running personal automation, local MCP avoids unnecessary complexity.
+
+
+    Remote MCP server: Remote MCP servers function similarly to local MCP servers but are hosted on the internet rather than your local machine. 
+    They expose tools, prompts, and resources that Claude can use to perform tasks on your behalf. These servers can integrate with various services such as project management tools, documentation systems, 
+    code repositories, and any other API-enabled service. Remote MCP servers are accessible on the Internet. People simply sign in and grant permissions to MCP clients using familiar authorization flows. 
+    These are mostly hosted in the cloud by a company or organization (like Neon’s remote server for their database, or potentially future ones from others). These MCPs use HTTP via SSE (Server-Sent Events), 
+    where the Client connects to the Server via HTTP.
+    The key advantage of remote MCP servers is their accessibility. Unlike local servers that require installation and configuration on each device, remote servers are available from any MCP client 
+    with an internet connection. This makes them ideal for web-based AI applications, integrations that emphasize ease-of-use and services that require server-side processing or authentication
+    With remote MCP, data travels between your client and the server over a network. While encryption protects this data in transit, it does move between systems. 
+    Remote servers typically implement authentication layers to ensure only authorized users can access tools.
+    Remote servers introduce network delays but may offer more powerful infrastructure than a local machine. While a good internet connection minimizes this impact, operations that require multiple back-and-forth 
+    communications can feel slower.
+
+
+How should we decide whether to run Model context protocal (MCP) locally or remotely?
+    Choose a Local MCP Server When:
+        You're a developer actively building or testing an MCP server or integration.
+        You need your AI assistant to access highly sensitive data that should never leave your local machine.
+        You require the absolute lowest possible latency, and the server interacts only with local files or tools.
+        You prefer direct control over the server process and managing its keys yourself.
+
+    Choose a Remote MCP Server When:
+        You need tools and data to be accessible to web-based AI agents – this is a massive driver for remote servers!
+        You want a simple, zero-setup experience for end-users.
+        You must provide easy access to a specific tool or database to many different users or clients.
+        You're happy to let the provider handle updates and maintenance.
+
+
+What are the different frameworks to develop Model context protocal (MCP)?
+    1. EasyMCP (TypeScript): https://github.com/zcaceres/easy-mcp
+    2. FastAPI-MCP (Python/FastAPI): https://gofastmcp.com/integrations/fastapi
+    3. FastMCP (TypeScript): https://www.npmjs.com/package/fastmcp/v/1.0.1?activeTab=dependencies
+    4. Foxy Contexts (Go): https://github.com/strowk/foxy-contexts
+    5. Higress MCP (Go/Envoy): https://github.com/alibaba/higress
+    6. MCP-Framework (multiple language): https://github.com/modelcontextprotocol
+    7. Quarkus MCP Server SDK (Java): https://github.com/quarkiverse/quarkus-mcp-server
+    8. Template MCP Server (TypeScript): The Template MCP Server is not a framework per se, but a CLI tool and project template to scaffold a new MCP server project quickly. 
+        It is akin to “create-react-app” but for an MCP server. Running npm init @mcpdotdirect/create-mcp-server generates a ready-made TypeScript project that includes everything needed to run an 
+        MCP server: basic server initialization, support for both stdio and HTTP transports, a directory structure for adding your own tools/resources, TypeScript configurations, and useful npm scripts 
+        for development and production. The template uses the official Model Context Protocol TypeScript SDK under the hood and follows recommended best practices. Essentially, after generating the project,
+        you simply add your custom logic (such as defining a tool function) and run the server in watch mode.

@@ -1,0 +1,21 @@
+
+
+
+Deep dive on Fast MCP
+FastMCP is the standard framework for building MCP applications, providing the fastest path from idea to production. 
+FastMCP server:
+< server code>
+<stdio client code>
+<SHTTP client code>
+
+How does openAI SDk connect to Model context protocal (MCP) in different modes?
+
+Model context protocal (MCP) alternatives?
+
+Next 
+    What is Model context protocal (MCP) registry?
+
+    What is Model context protocal (MCP) market place? examples?
+
+    What is Model context protocal (MCP) gateway?
+
