@@ -35,7 +35,7 @@ async def chat_session(session_id: str):
 
         result = await Runner.run(chatbot_agent, user_input,session=session)
         print(result.final_output)  # "San Francisco"
- 
+
 
     print("\nFull conversation history: ")
     chats = []

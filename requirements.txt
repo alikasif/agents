@@ -659,7 +659,7 @@ urllib3==2.4.0
     #   polygon-api-client
     #   requests
     #   types-requests
-uvicorn==0.34.3
+uvicorn==0.35
     # via
     #   gradio
     #   mcp
