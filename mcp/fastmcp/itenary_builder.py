@@ -1,5 +1,5 @@
 import requests
-from typing import Dict, List, Tuple, Optional, Set
+from typing import Dict, List, Tuple, Optional, Set, Union
 from datetime import datetime, timedelta
 from collections import defaultdict, deque
 import logging
@@ -165,14 +165,20 @@ def find_routes(
             trains = graph.get((from_st, to_st), [])
             logger.info(f"Found {trains} trains for direct route")
 
+
             for train in trains:
+                total_duration = convert_time_to_minutes(train["arrival_time"]) - convert_time_to_minutes(train["departure_time"])
+                hrs = int(total_duration // 60)
+                mins = int(total_duration % 60)
+
                 result["direct_routes"].append({
                     "train_number": train["train_number"],
                     "train_name": train["train_name"],
                     "from_station": from_st,
                     "to_station": to_st,
-                    "departure_time": _format_timestamp(train["departure_time"]),
-                    "arrival_time": _format_timestamp(train["arrival_time"]),
+                    "departure_time": train["departure_time"],
+                    "arrival_time": train["arrival_time"],
+                    "total_journey_time": f"{hrs}h {mins}m",
                     #"from_day": train["from_day"],
                     #"to_day": train["to_day"]
                 })
@@ -267,6 +273,7 @@ def _build_multi_hop_routes(
     
     # Try all combinations of trains
     for train_combination in product(*leg_options):
+        logger.info(f"Processing train combination {train_combination}")
         route = _validate_train_combination(
             train_combination, path, journey_date, min_layover_min, max_layover_min
         )
@@ -299,13 +306,20 @@ def _validate_train_combination(
         dep_timestamp = train["departure_time"]
         arr_timestamp = train["arrival_time"]
         current_train_number = train["train_number"]
+
+        logger.info(f"Processing train {current_train_number} from {train['from_station']} to {train['to_station']} with departure time {dep_timestamp} and arrival time {arr_timestamp}")
         
         if dep_timestamp is None or arr_timestamp is None:
             return None
         
         # Convert timestamps to datetime
-        dep_time = datetime.fromtimestamp(dep_timestamp)
-        arr_time = datetime.fromtimestamp(arr_timestamp)
+        # dep_time = datetime.fromtimestamp(dep_timestamp)
+        # arr_time = datetime.fromtimestamp(arr_timestamp)
+
+        dep_time = dep_timestamp
+        arr_time = arr_timestamp
+
+        logger.info(f"Departure time: {dep_time}, Arrival time: {arr_time}")
         
         # For first leg, record start time
         if i == 0:
@@ -316,9 +330,11 @@ def _validate_train_combination(
             # If same train continues, no layover needed
             if current_train_number != prev_train_number:
                 if prev_arrival_time:
-                    layover = (dep_time - prev_arrival_time).total_seconds() / 60
-                    
+                    #layover = (dep_time - prev_arrival_time).total_seconds() / 60
+                    layover = convert_time_to_minutes(dep_time) - convert_time_to_minutes(prev_arrival_time)
+                                        
                     if layover < min_layover_min or layover > max_layover_min:
+                        logger.info(f"Invalid layover time: {layover} minutes")
                         return None
                     
                     layover_str = f"{int(layover // 60)}h {int(layover % 60)}m"
@@ -334,8 +350,8 @@ def _validate_train_combination(
             "train_name": train["train_name"],
             "from_station": train["from_station"],
             "to_station": train["to_station"],
-            "departure_time": _format_timestamp(dep_timestamp),
-            "arrival_time": _format_timestamp(arr_timestamp),
+            "departure_time": dep_timestamp,
+            "arrival_time": arr_timestamp,
         }
         
         if i > 0 and layover_str:
@@ -347,9 +363,9 @@ def _validate_train_combination(
     
     # Calculate total journey time
     if total_start and prev_arrival_time:
-        total_duration = prev_arrival_time - total_start
-        hrs = int(total_duration.total_seconds() // 3600)
-        mins = int((total_duration.total_seconds() % 3600) // 60)
+        total_duration = convert_time_to_minutes(prev_arrival_time) - convert_time_to_minutes(total_start)
+        hrs = int(total_duration // 60)
+        mins = int(total_duration % 60)
         
         return {
             "total_hops": len(path),
@@ -361,12 +377,58 @@ def _validate_train_combination(
     return None
 
 
+
 def _format_timestamp(timestamp: Optional[int]) -> str:
     """Convert epoch timestamp to readable format"""
     if timestamp is None:
         return "N/A"
     return datetime.fromtimestamp(timestamp).strftime("%Y-%m-%d %H:%M:%S")
 
+
+def convert_time_to_minutes(time_val: Union[str, int]) -> int:
+    """
+    Convert time in 'HHMM' format (e.g., '1300' or 1300) to total minutes from midnight.
+    
+    Args:
+        time_val: Time string or integer (e.g., "1300", 1300)
+    
+    Returns:
+        Total minutes from midnight (e.g., 13*60 + 0 = 780)
+    """
+    if isinstance(time_val, int):
+        time_str = str(time_val)
+    else:
+        time_str = time_val
+        
+    # Remove any non-digit characters just in case
+    time_str = ''.join(filter(str.isdigit, time_str))
+    
+    # Pad with leading zeros if needed (e.g., "500" -> "0500")
+    time_str = time_str.zfill(4)
+    
+    if len(time_str) != 4:
+        raise ValueError(f"Invalid time format: {time_val}")
+        
+    hours = int(time_str[:2])
+    minutes = int(time_str[2:])
+    
+    return hours * 60 + minutes
+
+
+def get_dummy_graph():
+    return {
+        ("NDLS", "AGC"): [{"train_number": "12345", "train_name": "Express1", "departure_time": 1300, "arrival_time": 1700, "from_station": "NDLS", "to_station": "AGC"}],
+        ("AGC", "KTH"): [{"train_number": "54321", "train_name": "Express2", "departure_time": 1900, "arrival_time": 2200, "from_station": "AGC", "to_station": "KTH"}],
+        ("NDLS", "KTH"): [{"train_number": "56214", "train_name": "Express3", "departure_time": 1100, "arrival_time": 2300, "from_station": "NDLS", "to_station": "KTH"}],
+
+        ("A", "B"): [{"train_number": "112233", "train_name": "Express11", "departure_time": 900, "arrival_time": 1200, "from_station": "A", "to_station": "B"}],
+        ("B", "C"): [{"train_number": "11334", "train_name": "Express12", "departure_time": 1300, "arrival_time": 1500, "from_station": "B", "to_station": "C"}],
+        ("C", "D"): [{"train_number": "11445", "train_name": "Express13", "departure_time": 1600, "arrival_time": 1800, "from_station": "C", "to_station": "D"}],
+        ("A", "C"): [{"train_number": "11556", "train_name": "Express14", "departure_time": 1100, "arrival_time": 1900, "from_station": "A", "to_station": "C"}],
+        ("B", "D"): [{"train_number": "11667", "train_name": "Express15", "departure_time": 1230, "arrival_time": 1830, "from_station": "B", "to_station": "D"}],
+        ("C", "E"): [{"train_number": "11778", "train_name": "Express16", "departure_time": 1800, "arrival_time": 2300, "from_station": "C", "to_station": "E"}],
+
+    }
 
 # Example usage
 if __name__ == "__main__":
@@ -375,17 +437,25 @@ if __name__ == "__main__":
     
     # Build graph
     print("Building graph...")
-    graph = build_train_graph(journey_date, max_trains=20000)
+    #graph = build_train_graph(journey_date, max_trains=500)
+    graph = get_dummy_graph()
     print(f"Graph has {len(graph)} edges")
-    #print(graph)
-    while True:
-        from_station = input("Enter from station: ")
-        to_station = input("Enter to station: ")
-        max_hops = int(input("Enter max hops: "))
+    routes = find_routes("A", "D", journey_date, max_hops=5, graph=graph)
+  
+    print(f"Found {routes['summary']['total_routes']} total routes")
+    print(f"  - Direct: {routes['direct_routes']}")
+    print(f"  - Multi-hop: {routes['multi_hop_routes']}")
+
     
-        # Find routes
-        print("\nFinding routes...")
-        routes = find_routes(from_station, to_station, journey_date, max_hops=max_hops, graph=graph)
-        print(f"Found {routes['summary']['total_routes']} total routes")
-        print(f"  - Direct: {routes['direct_routes']}")
-        print(f"  - Multi-hop: {routes['multi_hop_routes']}")
+    #print(graph)
+    # while True:
+    #     from_station = input("Enter from station: ")
+    #     to_station = input("Enter to station: ")
+    #     max_hops = int(input("Enter max hops: "))
+    
+    #     # Find routes
+    #     print("\nFinding routes...")
+    #     routes = find_routes(from_station, to_station, journey_date, max_hops=max_hops, graph=graph)
+    #     print(f"Found {routes['summary']['total_routes']} total routes")
+    #     print(f"  - Direct: {routes['direct_routes']}")
+    #     print(f"  - Multi-hop: {routes['multi_hop_routes']}")
