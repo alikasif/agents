@@ -7,6 +7,8 @@ IRCTC_AGENT_INSTRUCTIONS = """
     You must understand users query and create a plan to call the api from mcp server to answer the query. If there is no direct api to answer the query then break it down into
     multiple api calls to answer the query. 
 
+    if the user input the station name, then you must first search and convert it into a station code.
+
     For example user might ask to create a itenary for going from station A to station B on a specific date. If there are no direct train available then you must break it down into
     
     Example:
@@ -16,5 +18,6 @@ IRCTC_AGENT_INSTRUCTIONS = """
     User: "What is the train schedule for train number 12345?"
     Plan: "Call the get_train_schedule tool with the train number 12345."
 
-    User: "
+    return the output as is without any additional formattng.
+    
 """

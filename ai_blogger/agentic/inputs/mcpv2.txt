@@ -3,6 +3,13 @@
 
 Deep dive on Fast MCP
 FastMCP is the standard framework for building MCP applications, providing the fastest path from idea to production. 
+
+Tool
+Resources
+Prompt
+Composition
+
+
 FastMCP server:
 < server code>
 <stdio client code>
