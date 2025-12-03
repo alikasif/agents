@@ -1,0 +1,144 @@
+What is Context Compaction?
+As conversations with AI agents grow longer, they can exceed token limits and become inefficient. Context compaction automatically summarizes older parts of conversations when they reach configurable thresholds, allowing you to maintain longer, more productive interactions without hitting model context limits.
+
+Key benefits include:
+
+Extended Conversations: Continue conversations beyond normal token limits
+Optimized Performance: Reduce token usage and improve response times
+Preserved Context: Keep critical information while summarizing less important details
+Cost Efficiency: Reduce token usage in API calls
+Reasoning Preservation: Maintains reasoning chains for extended thinking models
+
+Context engineering for long-horizon tasks
+Long-horizon tasks require agents to maintain coherence, context, and goal-directed behavior over sequences of actions where the token count exceeds the LLM’s context window. For tasks that span tens of minutes to multiple hours of continuous work, like large codebase migrations or comprehensive research projects, agents require specialized techniques to work around the context window size limitation.
+
+Waiting for larger context windows might seem like an obvious tactic. But it's likely that for the foreseeable future, context windows of all sizes will be subject to context pollution and information relevance concerns—at least for situations where the strongest agent performance is desired. To enable agents to work effectively across extended time horizons, we've developed a few techniques that address these context pollution constraints directly: compaction, structured note-taking, and multi-agent architectures.
+
+Compaction
+
+Compaction is the practice of taking a conversation nearing the context window limit, summarizing its contents, and reinitiating a new context window with the summary. Compaction typically serves as the first lever in context engineering to drive better long-term coherence. At its core, compaction distills the contents of a context window in a high-fidelity manner, enabling the agent to continue with minimal performance degradation.
+
+In Claude Code, for example, we implement this by passing the message history to the model to summarize and compress the most critical details. The model preserves architectural decisions, unresolved bugs, and implementation details while discarding redundant tool outputs or messages. The agent can then continue with this compressed context plus the five most recently accessed files. Users get continuity without worrying about context window limitations.
+
+The art of compaction lies in the selection of what to keep versus what to discard, as overly aggressive compaction can result in the loss of subtle but critical context whose importance only becomes apparent later. For engineers implementing compaction systems, we recommend carefully tuning your prompt on complex agent traces. Start by maximizing recall to ensure your compaction prompt captures every relevant piece of information from the trace, then iterate to improve precision by eliminating superfluous content.
+
+An example of low-hanging superfluous content is clearing tool calls and results – once a tool has been called deep in the message history, why would the agent need to see the raw result again? One of the safest lightest touch forms of compaction is tool result clearing, most recently launched as a feature on the Claude Developer Platform.
+
+Structured note-taking
+
+Structured note-taking, or agentic memory, is a technique where the agent regularly writes notes persisted to memory outside of the context window. These notes get pulled back into the context window at later times.
+
+This strategy provides persistent memory with minimal overhead. Like Claude Code creating a to-do list, or your custom agent maintaining a NOTES.md file, this simple pattern allows the agent to track progress across complex tasks, maintaining critical context and dependencies that would otherwise be lost across dozens of tool calls.
+
+Claude playing Pokémon demonstrates how memory transforms agent capabilities in non-coding domains. The agent maintains precise tallies across thousands of game steps—tracking objectives like "for the last 1,234 steps I've been training my Pokémon in Route 1, Pikachu has gained 8 levels toward the target of 10." Without any prompting about memory structure, it develops maps of explored regions, remembers which key achievements it has unlocked, and maintains strategic notes of combat strategies that help it learn which attacks work best against different opponents.
+
+After context resets, the agent reads its own notes and continues multi-hour training sequences or dungeon explorations. This coherence across summarization steps enables long-horizon strategies that would be impossible when keeping all the information in the LLM’s context window alone.
+
+As part of our Sonnet 4.5 launch, we released a memory tool in public beta on the Claude Developer Platform that makes it easier to store and consult information outside the context window through a file-based system. This allows agents to build up knowledge bases over time, maintain project state across sessions, and reference previous work without keeping everything in context.
+
+Sub-agent architectures
+
+Sub-agent architectures provide another way around context limitations. Rather than one agent attempting to maintain state across an entire project, specialized sub-agents can handle focused tasks with clean context windows. The main agent coordinates with a high-level plan while subagents perform deep technical work or use tools to find relevant information. Each subagent might explore extensively, using tens of thousands of tokens or more, but returns only a condensed, distilled summary of its work (often 1,000-2,000 tokens).
+
+This approach achieves a clear separation of concerns—the detailed search context remains isolated within sub-agents, while the lead agent focuses on synthesizing and analyzing the results. This pattern, discussed in How we built our multi-agent research system, showed a substantial improvement over single-agent systems on complex research tasks.
+
+The choice between these approaches depends on task characteristics. For example:
+
+Compaction maintains conversational flow for tasks requiring extensive back-and-forth;
+Note-taking excels for iterative development with clear milestones;
+Multi-agent architectures handle complex research and analysis where parallel exploration pays dividends.
+Even as models continue to improve, the challenge of maintaining coherence across extended interactions will remain central to building more effective agents.
+
+
+
+
+How It Works
+Context compaction uses an intelligent multi-step process:
+
+Trigger Detection: Compaction activates when ANY of these conditions are met:
+
+Token count exceeds token_threshold
+Total message count exceeds message_threshold
+User turn count exceeds turn_threshold
+Last message is from user AND on_turn_end is enabled
+Message Selection: The system identifies which messages to compact:
+
+Preserves recent messages based on retention_window and eviction_window
+Starts from the first assistant message in the sequence
+Maintains tool call/result pairs atomically (never splits them)
+Uses a conservative approach to prevent over-compaction
+Summarization: Older messages are sent to the configured model for summarization:
+
+Detects if a plan was being executed and uses appropriate format
+Extracts file operations, action logs, and task status
+Consolidates multiple older summaries chronologically
+Context Replacement: The summary replaces compacted messages as a user message:
+
+Includes any user feedback from the compacted sequence
+Preserves the natural conversation flow
+Reasoning Preservation: For extended thinking models:
+
+Extracts the most recent reasoning from compacted messages
+Injects it into the first remaining assistant message
+Prevents breaking reasoning chains while avoiding accumulation
+This process runs in parallel with your main request to minimize latency impact.
+
+Example Use Cases
+Long Debugging Sessions
+When debugging complex issues, conversations can become lengthy. Context compaction allows the agent to remember key debugging steps while summarizing earlier diagnostics.
+Multi-Stage Project Development
+For projects developed over multiple sessions, context compaction enables the agent to maintain awareness of project requirements and previous decisions while focusing on current tasks.
+Interactive Learning and Tutorials
+When using Forge for learning or following tutorials, compaction helps maintain the thread of the lesson while summarizing earlier explanations.
+
+
+implementation based on Google ADK:
+
+    Google ADK
+    As an ADK agent runs it collects context information, including user instructions, retrieved data, tool responses, and generated content. As the size of this context data grows, agent processing times typically also increase. More and more data is sent to the generative AI model used by the agent, increasing processing time and slowing down responses. The ADK Context Compaction feature is designed to reduce the size of context as an agent is running by summarizing older parts of the agent workflow event history.
+
+    The Context Compaction feature uses a sliding window approach for collecting and summarizing agent workflow event data within a Session. When you configure this feature in your agent, it summarizes data from older events once it reaches a threshold of a specific number of workflow events, or invocations, with the current Session.
+
+    Configure context compaction¶
+    Add context compaction to your agent workflow by adding an Events Compaction Configuration setting to the App object of your workflow. As part of the configuration, you must specify a compaction interval and overlap size, as shown in the following sample code:
+
+
+    from google.adk.apps.app import App
+    from google.adk.apps.app import EventsCompactionConfig
+
+    app = App(
+        name='my-agent',
+        root_agent=root_agent,
+        events_compaction_config=EventsCompactionConfig(
+            compaction_interval=3,  # Trigger compaction every 3 new invocations.
+            overlap_size=1          # Include last invocation from the previous window.
+        ),
+    )
+    Once configured, the ADK Runner handles the compaction process in the background each time the session reaches the interval.
+
+
+    Define a Summarizer¶
+    You can customize the process of context compression by defining a summarizer. The LlmEventSummarizer class allows you to specify a particular model for summarization. The following code example demonstrates how to define and configure a custom summarizer:
+
+
+    from google.adk.apps.app import App, EventsCompactionConfig
+    from google.adk.apps.llm_event_summarizer import LlmEventSummarizer
+    from google.adk.models import Gemini
+
+    # Define the AI model to be used for summarization:
+    summarization_llm = Gemini(model="gemini-2.5-flash")
+
+    # Create the summarizer with the custom model:
+    my_summarizer = LlmEventSummarizer(llm=summarization_llm)
+
+    # Configure the App with the custom summarizer and compaction settings:
+    app = App(
+        name='my-agent',
+        root_agent=root_agent,
+        events_compaction_config=EventsCompactionConfig(
+            summarizer=my_summarizer,
+            compaction_interval=3,
+            overlap_size=1
+        ),
+    )
+    You can further refine the operation of the SlidingWindowCompactor by by modifying its summarizer class LlmEventSummarizer including changing the prompt_template setting of that class.

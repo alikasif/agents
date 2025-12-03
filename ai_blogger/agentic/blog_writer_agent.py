@@ -76,7 +76,7 @@ class BloggerAgent:
     def __init__(self):        
         self.blogger_agent = Agent(
             name="AI/LLM Technical Blogger",
-            model=get_model("GEMINI"),
+            model=get_model(),
             instructions=blogger_prompt,
             tools=[google_search]
         )

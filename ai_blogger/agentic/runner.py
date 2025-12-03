@@ -74,13 +74,13 @@ def read_blog(blog_name: str):
 
 load_dotenv(override=True)
 
-goal= "Model Context Protocol (MCP)"
-name = "mcp_blog"
+goal= "LLM Context Compaction"
+name = "compaction_blog"
 
 
 response = None
 while True:
-    user_input = read_topic("ai_blogger\\agentic\\inputs\\mcp.txt")
+    user_input = read_topic("ai_blogger\\agentic\\inputs\\compaction.txt")
     response = analysis(goal, user_input)
 
     shall_continue = input("Do you want to continue with research and blog writing? (yes/no): ").strip().lower()
