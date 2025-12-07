@@ -144,6 +144,7 @@ dependencies = [
     { name = "ffmpy" },
     { name = "filelock" },
     { name = "flask" },
+    { name = "foundry-local-sdk" },
     { name = "frozenlist" },
     { name = "fsspec" },
     { name = "gepa" },
@@ -151,6 +152,7 @@ dependencies = [
     { name = "google-adk" },
     { name = "google-crc32c" },
     { name = "google-genai" },
+    { name = "googlemaps" },
     { name = "googlesearch-python" },
     { name = "googletrans" },
     { name = "gradio" },
@@ -242,6 +244,7 @@ dependencies = [
     { name = "playwright" },
     { name = "plotly" },
     { name = "polygon-api-client" },
+    { name = "polyline" },
     { name = "posthog" },
     { name = "prance" },
     { name = "prompt-toolkit" },
@@ -390,6 +393,7 @@ requires-dist = [
     { name = "ffmpy", specifier = "==0.6.0" },
     { name = "filelock", specifier = "==3.18.0" },
     { name = "flask", specifier = ">=3.1.1" },
+    { name = "foundry-local-sdk", specifier = "==0.5.1" },
     { name = "frozenlist", specifier = "==1.7.0" },
     { name = "fsspec", specifier = "==2025.5.1" },
     { name = "gepa", specifier = "==0.0.7" },
@@ -397,6 +401,7 @@ requires-dist = [
     { name = "google-adk", specifier = "==1.10.0" },
     { name = "google-crc32c", specifier = "==1.7.1" },
     { name = "google-genai", specifier = "==1.29.0" },
+    { name = "googlemaps", specifier = "==4.10.0" },
     { name = "googlesearch-python", specifier = "==1.3.0" },
     { name = "googletrans", specifier = "==4.0.2" },
     { name = "gradio", specifier = "==6.0.0" },
@@ -488,6 +493,7 @@ requires-dist = [
     { name = "playwright", specifier = "==1.52.0" },
     { name = "plotly", specifier = "==6.1.2" },
     { name = "polygon-api-client", specifier = ">=1.15.3" },
+    { name = "polyline", specifier = ">=2.0.4" },
     { name = "posthog", specifier = "==5.4.0" },
     { name = "prance", specifier = "==25.4.8.0" },
     { name = "prompt-toolkit", specifier = "==3.0.51" },
@@ -2075,6 +2081,19 @@ wheels = [
 ]
 
 [[package]]
+name = "foundry-local-sdk"
+version = "0.5.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "httpx" },
+    { name = "pydantic" },
+    { name = "tqdm" },
+]
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ed/6b/76a7fe8f9f4c52cc84eaa1cd1b66acddf993496d55d6ea587bf0d0854d1c/foundry_local_sdk-0.5.1-py3-none-any.whl", hash = "sha256:f3639a3666bc3a94410004a91671338910ac2e1b8094b1587cc4db0f4a7df07e", size = 14003, upload-time = "2025-11-21T05:39:58.099Z" },
+]
+
+[[package]]
 name = "frozenlist"
 version = "1.7.0"
 source = { registry = "https://pypi.org/simple" }
@@ -2564,6 +2583,15 @@ wheels = [
 grpc = [
     { name = "grpcio" },
 ]
+
+[[package]]
+name = "googlemaps"
+version = "4.10.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "requests" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/fe/26/bca4d737a9acea25e94c19940a780bbf0be64a691f7caf3a68467d3a5838/googlemaps-4.10.0.tar.gz", hash = "sha256:3055fcbb1aa262a9159b589b5e6af762b10e80634ae11c59495bd44867e47d88", size = 33056, upload-time = "2023-01-26T16:45:02.501Z" }
 
 [[package]]
 name = "googlesearch-python"
@@ -4975,6 +5003,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/9a/c6/f552a630041f5d9b60d3bf7736db54969648c4c0938cb6ff45abe1bd16ec/polygon_api_client-1.16.3.tar.gz", hash = "sha256:df575ff6a4a7636cc92272803749adca7e81d2340af493c51a19fe75b51530fc", size = 44077, upload-time = "2025-10-30T14:39:25.445Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/1c/5e/a7121fd1ba43ec8672c0fb481e119ea9dede5f0ba6016f45f272e49c6de5/polygon_api_client-1.16.3-py3-none-any.whl", hash = "sha256:4dec9e27fb5d17a36aacd9372d1df30af2f2b7639b4166ca10d2d48d128d2cd8", size = 61992, upload-time = "2025-10-30T14:39:24.134Z" },
+]
+
+[[package]]
+name = "polyline"
+version = "2.0.4"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/2c/c1/1a6ee4f9f02a55b2a9241bbadd342970160f7e42423307f21ee8f5530d4e/polyline-2.0.4.tar.gz", hash = "sha256:f05ade694522bf1720febebe1672f820f43a13c6a1664751e7769d47e8ca9b1b", size = 8261, upload-time = "2025-12-02T17:55:22.735Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/34/a8/4ebd3cb31d380e018efb1c8bf92664b196a41aba19506015b682af2587b9/polyline-2.0.4-py3-none-any.whl", hash = "sha256:a4e0c15b8ecb32915559f8cf210f1f8c2f5cc53d3cd32c91d7c1668d6e936e10", size = 7167, upload-time = "2025-12-02T17:55:20.323Z" },
 ]
 
 [[package]]

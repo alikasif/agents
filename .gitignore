@@ -182,3 +182,4 @@ cython_debug/
 6_mcp/accounts.db
 6_mcp/memory/*.db
 llm_fine_tuning/data
+*.jpg
