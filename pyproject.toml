@@ -5,7 +5,7 @@ description = "Multiple projects ranging from LLM, Agents & Multi agent architec
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "anthropic==0.69.0",
+    "anthropic==0.70.0",
     "autogen-agentchat==0.6.1",
     "autogen-ext[grpc,mcp,ollama,openai]==0.6.1",
     "bs4==0.0.2",
@@ -21,7 +21,7 @@ dependencies = [
     "langsmith==0.3.45",
     "lxml==5.4.0",
     "mcp-server-fetch==2025.1.17",
-    "mcp[cli]==1.19.0",
+    "mcp[cli]==1.23.0",
     "openai==2.8.0",
     "openai-agents==0.6.1",
     "playwright==1.52.0",
@@ -133,9 +133,9 @@ dependencies = [
     "openapi-core==0.19.5",
     "openapi-schema-validator==0.6.3",
     "openapi-spec-validator==0.7.2",
-    "opentelemetry-api==1.34.1",
-    "opentelemetry-sdk==1.34.1",
-    "opentelemetry-semantic-conventions==0.55b1",
+    "opentelemetry-api==1.39",
+    "opentelemetry-sdk==1.39",
+    "opentelemetry-semantic-conventions==0.60b0",
     "orjson==3.10.18",
     "ormsgpack==1.10.0",
     "packaging==24.2",
@@ -245,6 +245,8 @@ dependencies = [
     "foundry-local-sdk==0.5.1",
     "googlemaps==4.10.0",
     "polyline>=2.0.4",
+    "agent-framework-anthropic==1.0.0b251211",
+    "agent-framework-azurefunctions>=1.0.0b251211",
 ]
 
 [dependency-groups]

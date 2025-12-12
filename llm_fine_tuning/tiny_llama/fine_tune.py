@@ -168,14 +168,14 @@ def test():
 if __name__ == "__main__":
     model_id, model, tokenizer = get_model_and_tokenizr()
 
-    # formatted_data = get_formatted_data()
-    # print(len(formatted_data))
+    formatted_data = get_formatted_data()
+    print(len(formatted_data))
 
-    # train, test = get_train_test_split(tokenizer)
-    # print( len(train), len(test) )
+    train, test = get_train_test_split(tokenizer)
+    print( len(train), len(test) )
 
-    # print("starting to fine tune")
-    # fine_tune()
-    # print("completed fine tune")
+    print("starting to fine tune")
+    fine_tune()
+    print("completed fine tune")
 
-    test()
+#    test()
