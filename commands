@@ -1,0 +1,1 @@
+litellm --config iaas/config.yaml  --use_prisma_db_push

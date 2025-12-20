@@ -1,6 +1,6 @@
 from langchain.agents import create_agent
 from dotenv import load_dotenv
-from prompts import generator_prompt, thought_introspector_prompt, reflection_prompt
+from prompts import generator_prompt, thought_introspector_prompt, reflection_prompt, prompt_ranking_prompt
 from tools import google_search
 from data_classes import GeneratorOutput, ThoughtIntrospectorOutput, ReflectionOutput
 import os
@@ -74,3 +74,24 @@ result = generator_agent.invoke(
 )
 
 print("\nGenerator2 Agent Output:", result["structured_response"], "\n\n")
+
+response4 = result["structured_response"]
+
+judgement_agent = create_agent(
+    model = os.getenv("ANTHROPIC_CHAT_MODEL_ID"),
+    tools=[google_search],
+    system_prompt=prompt_ranking_prompt,
+)
+
+result = judgement_agent.invoke(
+    {"messages": [{"role": "user", "content": 
+        f"generator_prompt: {generator_prompt}\n \
+        user_input: write a linkedin post about LLM inference \n \
+        generator_answer: {response.final_answer}\n \
+        reflection_prompt: {response3.improved_prompt}\n \
+        reflection_answer: {response4.final_answer}\n \""
+    }]}
+)
+
+print("\nJudgement Agent Output:", result, "\n\n")
+

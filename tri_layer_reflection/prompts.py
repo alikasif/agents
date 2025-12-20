@@ -92,3 +92,12 @@ IMPROVED PROMPT:
 REASON FOR CHANGES:
 <brief explanation of why changes were required>
 """
+
+prompt_ranking_prompt = """
+You are the Prompt Ranking Agent. 
+You will be given the generator prompt, user input, and the generator's final answer.
+You will also be given reflection prompt, user input, and the generator's final answer.
+
+Your job is to rank the prompts based on their quality, ground truth and closeness to the final answer.
+
+"""

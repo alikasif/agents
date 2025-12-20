@@ -1,0 +1,26 @@
+model_list:  
+  - model_name: ollama
+    litellm_params:
+      model: "openai/os.environ/OLLAMA_MODEL"
+      api_base: "os.environ/OLLAMA_API_BASE"
+  - model_name: gpt5
+    litellm_params:
+      model: "os.environ/OPENAI_MODEL"
+      api_key: "os.environ/OPENAI_API_KEY"
+  - model_name: anthropic
+    litellm_params:
+      model: "os.environ/ANTHROPIC_MODEL"
+      api_key: "os.environ/ANTHROPIC_API_KEY"
+  - model_name: gemini
+    litellm_params:
+      model: "os.environ/GOOGLE_MODEL"
+      api_key: "os.environ/GOOGLE_API_KEY"
+      
+general_settings: 
+  master_key: "os.environ/LITELLM_MASTER_KEY"
+  database_url: "os.environ/DB_URL"
+
+litellm_settings:
+  max_budget: 0
+  budget_duration: 7d
+

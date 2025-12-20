@@ -6,6 +6,7 @@ analyst_prompt = """
     1.  Current Date
     2.  Topic
     3.  Initial Content (Context)
+    4.  file name to write the output
 
     ### Instructions:
     1.  **Analyze the Request**: Understand the core problem and the provided content.
@@ -20,13 +21,14 @@ analyst_prompt = """
     5.  **Constraints**:
         -   Do not hallucinate.
         -   Keep it strictly relevant to the input topic.
-        -   Do not answer from your knowledge base. Use only the content provided in the input.
+        -   Do not answer from your knowledge base. Use only the content provided in the input and google search.
+    6. Use the file writer tool to write the generated response to a file.
 
-    ### Output Structure (JSON format expected by the parser):
-    -   topics: List of topics
-        -   topic: Title of the section
-        -   sub_topics: List of specific questions or points to research
-        -   content: Relevant context from the input
+    ### CRITICAL OUTPUT FORMAT:
+    - Respond with RAW JSON only
+    - Do NOT wrap in ```json or ``` code blocks
+    - Do NOT include any text before or after the JSON
+    - Start your response directly with { and end with }
 """
 
 
@@ -38,23 +40,27 @@ research_prompt = """
     1.  **Deep Dive**: For each subtopic, conduct thorough research. Do not just scratch the surface.
     2.  **Technical Depth**: Look for:
         -   Specific algorithms and methodologies.
-        -   Code examples (Python/PyTorch/TensorFlow preferred).
+        -   Code snippets in python
         -   Benchmarks and performance metrics.
         -   Pros/Cons and trade-offs.
     3.  **Currency**: Prioritize information from the last 12 months (papers, release notes).
     4.  **Accuracy**: Verify facts. Cite sources.
     5.  **Constraints**:
-        -   Do not answer from your knowledge base. Use only the content provided in the input.
+        -   Do not answer from your knowledge base. Use only the content provided in the input and google search.
 
     ### Constraints:
-    -   Each topic response should be detailed (~300-500 words).
+    -   Each topic response should be detailed (~200-300 words).
     -   Include code snippets where relevant.
     -   Do not repeat content.
+    
+    ### CRITICAL OUTPUT FORMAT:
+    - Respond with RAW JSON only
+    - Do NOT wrap in ```json or ``` code blocks
+    - Do NOT include any text before or after the JSON
+    - Start your response directly with { and end with }
 
-    ### Output Structure:
-    1.  **Detailed Technical Notes**: The core research content.
-    2.  **Code Examples**: Relevant snippets.
-    3.  **Sources**: List of URLs.
+    ### Required JSON Structure:
+    {"research": "Your detailed research content here"}
 """
 
 
@@ -88,8 +94,10 @@ blogger_prompt = """
     ### Constraints:
     -   Strictly adhere to the facts in the research notes.
     -   Do not invent information.
-    -   Length: ~800-1200 words.
-    -   Do not answer from your knowledge base. Use only the content provided in the research notes.
+    -   Length: ~299-300 words.
+    -   Do not answer from your knowledge base. Use only the content provided in the research notes and google search.
+    
+    You must write the blog in the file using blog writer tool
 """
 
 
@@ -103,6 +111,7 @@ editor_prompt = """
     3.  **Formatting**: Verify Markdown syntax (headers, code blocks, lists).
     4.  **Tone Check**: Ensure it sounds professional and technical (remove "In this blog post..." or "I hope you enjoyed...").
     5.  **Structure**: Ensure the logical progression makes sense.
+    6.  **Use the blog writer tool to write the edited blog to a file.
 
     ### Output:
     -   The fully polished, ready-to-publish Markdown blog post.

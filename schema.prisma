@@ -1,0 +1,9 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DB_URL")
+}
+
+generator py {
+  provider             = "prisma-client-py"
+  recursive_type_depth = 5
+}

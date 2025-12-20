@@ -1,0 +1,50 @@
+
+Inference Gateway (IGW)
+
+A unified gateway for accessing multiple LLM providers through a single API.
+
+Why Use an Inference Gateway?
+
+| Challenge | Solution |
+|-----------|----------|
+| Multiple LLM APIs with different formats | **Universal API** - One endpoint for all providers |
+| Vendor lock-in | **Easy switching** between OpenAI, Anthropic, Gemini, Ollama |
+| Unpredictable costs | **Cost tracking** and budget controls per user/key |
+| Provider outages | **Fallback routing** and circuit breakers |
+| Security concerns | **API key management** with virtual keys |
+
+---
+
+Key Features for any LLM or Inference Gateway
+
+| Feature | Description |
+|---------|-------------|
+| **Universal API** | Compatible endpoint for all LLM providers |
+| **Resilience & Load Balancing** | Distribute requests across multiple model deployments |
+| **Circuit Breaker** | Automatic failover when providers are down |
+| **Usage & Cost Tracking** | Per-user and per-key spend monitoring |
+| **Virtual Keys** | Generate API keys with model access controls |
+| **Caching** | Response caching to reduce costs and latency |
+| **Guardrails** | Content filtering and safety controls |
+| **Auth/AuthZ** | Master key + user key authentication |
+| **Monitoring & Logging** | Request/response logging for debugging |
+| **Custom Pre and Post Processing** | Enables the addition of custom logic before sending requests to LLMs and after receiving responses |
+
+---
+
+Compare
+ - LiteLLM
+ - Portkey AI
+ - OpenRouter
+ - LLM Gateway
+ - Bifrost
+ - GKE Inference Gateway
+
+
+Resources
+- [LiteLLM Docs](https://docs.litellm.ai/)
+- [Portkey AI](https://portkey.ai/)
+- [OpenRouter](https://openrouter.ai/)
+- [LLM Gateway](https://docs.llmgateway.io/)
+- [Bifrost](https://docs.getbifrost.ai/quickstart/gateway/setting-up)
+- [GKE Inference Gateway](https://docs.cloud.google.com/kubernetes-engine/docs/concepts/about-gke-inference-gateway)

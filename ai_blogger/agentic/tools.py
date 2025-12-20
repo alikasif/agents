@@ -5,10 +5,60 @@ from langchain_core.tools import tool
 from agents import function_tool
 from langchain_tavily import TavilySearch
 from dotenv import load_dotenv
-
+from structured_output import *
 import logging
-
+import os
 logging.basicConfig(level=logging.INFO) # Set the root logger level to INFO
+
+
+@function_tool
+def blog_writer(blog_name: str, content: str) -> str:
+    """
+    This tool writes the content to the file
+    Args:
+        blog_name: name of the blog
+        content: content to write to the file
+    Returns:
+        confirmation that content was written to the file
+    """
+    print(f"\n\nWriting blog {blog_name} to {content}\n\n")
+    
+    directory_path = f".\\ai_blogger\\agentic\\blogs\\{blog_name}"
+    os.makedirs(directory_path, exist_ok=True)
+    
+    with open(f"{directory_path}\\{blog_name}.md", "a") as file_object:
+        # Write the new content to the file
+        try:
+            file_object.write(content)
+        except:
+            print(f"failed while writing {content}\n\n")
+        
+        file_object.write("\n\n")
+    
+    print(f"\n\nWritten Blog {blog_name} \n\n")
+
+
+@function_tool
+def file_writer(file_path: str, content: Outline) -> str:
+    """
+    This tool writes the content to the file
+    Args:
+        file_path: path to the file
+        content: content to write to the file
+    Returns:
+        confirmation that content was written to the file
+    """
+    print(f"\n\nWriting content {content} to {file_path}\n\n")
+
+    with open(file_path, "a", encoding="utf-8") as f:
+        print(f"opening file {file_path} to write {str(content)}")
+
+        for topic in content.topics:
+            f.write(str(topic))
+            f.write("\n\n")
+
+    return f"Content written to {file_path}"
+
 
 def tavily_google_search(query: str) -> str:
     """
@@ -59,7 +109,7 @@ def google_search(query:str) -> str:
         queries = query.split(",")
         for query in queries:
             time.sleep(5)
-            logging.info(f"\n\n-- running google_search for  {query}")
+            #logging.info(f"\n\n-- running google_search for  {query}")
             search = GoogleSerperAPIWrapper()
             result = search.run(query)
             results.append(result)

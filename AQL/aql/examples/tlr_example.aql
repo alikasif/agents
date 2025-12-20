@@ -1,0 +1,26 @@
+AGENT generator
+  ROLE: generator
+  EXPOSE: thoughts, answer
+END
+
+AGENT interpreter
+  ROLE: interpreter
+  EXPOSE: critique
+END
+
+AGENT reflector
+  ROLE: reflector
+  EXPOSE: improved_prompt, confidence
+END
+
+WORKFLOW refine_prompt
+  INPUTS: question, initial_prompt
+  STEPS:
+    RUN generator WITH question, initial_prompt AS (thoughts,answer)
+    RUN interpreter WITH initial_prompt, thoughts AS critique
+    RUN reflector WITH question, initial_prompt, thoughts, answer, critique AS (improved_prompt,confidence)
+    UPDATE initial_prompt = improved_prompt
+  LOOP UNTIL confidence > 0.85 MAX_ITER 5
+END
+
+EXECUTE refine_prompt WITH question="Summarize this report", initial_prompt="Summarize briefly"
