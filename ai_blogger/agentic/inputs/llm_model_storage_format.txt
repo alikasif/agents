@@ -1,0 +1,332 @@
+model file format
+
+The model architecture is just the framework. The real magic happens with the “learned parameters.” Through a process called training, the model ingests data and adjusts these parameters like tiny knobs on the wizard’s cauldrons. These adjustments allow the model to learn patterns and relationships within the data, ultimately enabling it to make accurate predictions.
+The realm of machine learning is a fascinating one, brimming with algorithms that can seemingly predict anything from the next movie you’ll love to the weather forecast for tomorrow. But have you ever stopped to wonder what fuels these marvels of modern technology? The secret lies within something called a “model file,” a cryptic container holding the key to the algorithm’s power. These files, often shrouded in mystery with extensions like .pkl, .pt, and .h5, act as the hidden recipe book and toolbox for the machine learning wizard.
+
+Saving a model refers to the process of saving the model’s parameters, weights, etc., to a file. Usually, all ML and DL models provide some kind of method (eg. model.save()) for saving the models. But you must be aware that save is a single action and gives only a model binary file, so you still need code to make your ML application production-ready.
+
+Packaging, on the other hand, refers to the process of bundling or containerizing the necessary components of a model, such as the model file, dependencies, configuration files, etc., into a single deployable package. The goal of a package is to make it easier to distribute and deploy the ML model in a production environment. 
+Once packaged, a model can be deployed across different environments, which allows the model to be used in various production settings such as web applications, mobile applications, etc. Docker is one of the tools which allows you to do this.
+
+Storing the ML model refers to the process of saving the trained model files in a centralized storage that can be accessed anytime when needed. When storing a model, you normally choose some sort of storage from where you can fetch your model and use it anytime. The model registry is a category of tools that solve this issue for you.
+
+RESOURCES
+https://neptune.ai/blog/saving-trained-model-in-python
+https://www.neonscience.org/resources/learning-hub/tutorials/about-hdf5
+https://learnopencv.com/model-weights-file-formats-in-machine-learning/
+https://www.abhik.xyz/articles/ggml-structure
+https://github.com/ggml-org/ggml/blob/master/docs/gguf.md
+https://www.ibm.com/think/topics/gguf-versus-ggml
+https://medium.com/@vimalkansal/understanding-the-gguf-format-a-comprehensive-guide-67de48848256
+https://www.analyticsvidhya.com/blog/2024/10/convert-models-to-gguf-format/
+https://www.analyticsvidhya.com/blog/2023/07/onnx-model-open-neural-network-exchange/
+
+
+Model lifecycle
+
+define the model
+model = ...
+
+Training the model
+model.fit(...)
+
+Saving the model:
+model.save('model_topology.h5') 
+
+Saving the weights:
+model.save_weights('weights.h5')
+
+When calling load_model(), if you want to run inference, you have to call load weights to load the pretrained weights.
+model = load_model('model_topology.h5')
+model.load_weights('weights.h5')
+
+Model Storage Format
+pickle, joblib, .hdf5, .h5, .pth, .safetensors, .GGML, GGUF,  .onnx, .pmml
+
+
+pytorch.save()
+tf.keras.Model.save()
+keras.save()
+
+
+PICKLE
+it is the most basic pythonic ay to save the model weights. pickle is a module built-in in Python which allows for Python object serialization. “Pickling” is the process in which a Python object is converted into a byte stream, and “unpickling” is the inverse operation, whereby a byte stream is converted back into Python objects.
+
+```
+# loading dependencies
+import pandas as pd
+import numpy as np
+from sklearn import linear_model
+
+# loading our data
+train_df = pd.read_csv('train.csv')
+# viewing few files
+print(train_df.head())
+
+# creating the model object
+model = linear_model.LinearRegression() # y = mx+b
+# fitting model with X_train - area, y_train - price
+model.fit(train_df[['area']],train_df.price)
+
+# loading library
+import pickle
+# create an iterator object with write permission - model.pkl
+with open('model_pkl', 'wb') as files:
+    pickle.dump(model, files)
+
+# load again
+# load saved model
+with open('model_pkl' , 'rb') as f:
+    lr = pickle.load(f)
+
+```
+
+The pickle module tracks the objects it has serialized, so later references to the same object won’t serialize again, allowing for faster execution.
+Allows saving model in very little time. Good For small models with fewer parameters like the one we used. doesnt support memoery mapping.
+If you unpickle untrusted data, pickling could pose a security threat. Unpickling an object can execute malicious code, so it’s crucial to only unpickle information from reliable sources.
+Pickled objects’ use may be constrained in some circumstances since they cannot be transferred between different Python versions or operating systems.
+For models with a big memory footprint, pickling can result in the creation of huge files, which can be problematic.
+Pickling can make it difficult to track changes to a model over time, especially if the model is updated frequently and it is not feasible to create multiple pickle files for different versions of models that you try. 
+Pickle is most suited for small-size models and also has some security issues, these reasons are enough to look for another alternative for saving the ML models.
+
+
+JOBLIB
+Joblib is an alternative to model saving in a way that it can operate on objects with large NumPy arrays/data as a backend with many parameters. It can be used as an individual module(refer here) or using the Sci-Kit Learn library.
+joblib is a set of tools to provide lightweight pipelining in Python. It focuses on disk-caching, memoization, and parallel computing. The library is optimized to be fast and robust on large data in particular and has specific optimizations for NumPy arrays. it has built in compression supprot. joblib has support for performing parallel processing, as joblib has built-in tools for lightweight pipelining and parallel execution.
+
+Since pipelining is used to efficiently manage a large amount of data, joblib contains a replacement for pickle to work efficiently on large data.
+
+```
+# loading dependency
+from sklearn.externals import joblib
+# saving our model # model - model , filename-model_jlib
+joblib.dump(model , 'model_jlib')
+```
+
+Ideal for the large models having many parameters and can have large NumPy arrays in the backend.
+Can only save the file to disk and not to a string.
+Works similar to pickle `dump` and `load`
+Most fitted for sklearn estimators.
+Allows memory-mapping saved models for efficient access without loading the whole object into memory.
+
+joblib is usually significantly faster on large NumPy arrays because it has special implementations for them. If your model contains large NumPy arrays (as the vast majority of models do), then joblib should be faster than pickle. joblib is the go-to for saving scikit-learn models, and avoids many of the internal path mismatches that plague pickle during version upgrades.
+
+
+If you don’t need to save NumPy arrays, then pickle may be significantly faster, especially on large collections of native Python objects because the pickle module is implemented in C while joblib is pure Python.
+
+
+HDF5
+HDF5 uses a "file directory" like structure that allows you to organize data within the file in many different structured ways, as you might do with files on your computer. The HDF5 format also allows for embedding of metadata making it self-describing.
+
+The HDF5 format can be thought of as a file system contained and described within one single file. Think about the files and folders stored on your computer. You might have a data directory with some temperature data for multiple field sites. These temperature data are collected every minute and summarized on an hourly, daily and weekly basis. Within one HDF5 file, you can store a similar set of data organized in the same way that you might organize files and folders on your computer. However in a HDF5 file, what we call "directories" or "folders" on our computers, are called groups and what we call files on our computer are called datasets.
+
+HDF5 is a file format that allows to collect multiple data sets in a single file. Within that file, data sets can be arranged into a hierarchy of “groups”, which are comparable to directories in a filesystem. In many ways, HDF5 is “a filesystem in a file”.
+The data format is binary and quite complex, and therefore requires special tools to read and write, or to even view, a data set. HDF5 supports compression of the contained data sets. It does not appear to promote any particular semantic data model or workflow.
+Similar to the way .txt refers to text files or .pdf refers to Portable Document Format files, HDF files are adorned with .hdf, .hdf5, .h5 style extensions.
+
+
+2 Important HDF5 Terms
+Group: A folder like element within an HDF5 file that might contain other groups OR datasets within it.
+Dataset: The actual data contained within the HDF5 file. Datasets are often (but don't have to be) stored within groups in the file.
+
+One key benefit of having metadata that are attached to each file, group and dataset, is that this facilitates automation without the need for a separate (and additional) metadata document. Using a programming language, like R or Python, we can grab information from the metadata that are already associated with the dataset, and which we might need to process the dataset.
+The HDF5 format is a compressed format. The size of all data contained within HDF5 is optimized which makes the overall file size smaller. Even when compressed, however, HDF5 files often contain big data and can thus still be quite large. A powerful attribute of HDF5 is data slicing, by which a particular subsets of a dataset can be extracted for processing. This means that the entire dataset doesn't have to be read into memory (RAM); very helpful in allowing us to more efficiently work with very large (gigabytes or more) datasets!
+
+Big concern:
+There are reports that HDF5 is susceptible to catastrophic corruption, rendering the entire file unreadable. For a storage technology, that is almost the worst thing that can be said about it. When working with data it is often (not always!) acceptable to lose some of the records to corruption, but losing an entire data set (or, as with HDF5, a collection of sets) is intolerable.
+
+.PTH
+A ‘.pth’ file in PyTorch is a file format used to save different states of model including it’s weights, biases and other parameter . These files are python pickled objects, which means they are serialized. This allows one to save a trained model and later load it to continue training or to make predictions.
+A file with a .pth extension typically contains a serialized PyTorch state dictionary. A PyTorch state dictionary is a Python dictionary that contains the state of a PyTorch model, including the model's weights, biases, and other parameters.
+The .pth extension is commonly used to save PyTorch state dictionaries to disk. You can use the torch.save() function to save a PyTorch state dictionary to a file with a .pth extension.
+They rely on Python’s pickle module for serialization.
+
+There are two main types of objects that .pth files can contain:
+
+Model State Dictionaries
+A model state dictionary is a Python dictionary that maps each layer of the model to its parameters (weights and biases). This dictionary only contains the parameters of the model, not the architecture itself.
+
+Entire Model Objects
+An entire model object includes both the model architecture and the parameters. This is useful when you want to save the entire model and reload it later without having to redefine the model class
+
+There are basically two primarily used file extension (.pt) and (.pth) in PyTorch for saving and loading model parameters, architectures and other machine learning workflows.
+.pt :
+This is used for saving the entire models, including architecture and parameters. It can be seen as a full package containing everything that need to deploy a model, like a complete meal in a takeout box. We can open it up and start eating without any additional preparation.
+
+.pth :
+This is used for saving only the model parameters (weights) or checkpoints during training. It is more like a box of ingredients . It contains weight and configurations, but still needed to combine them with right recipe (model architecture ) to use it efficiently.
+
+Key Characteristics:
+Highly flexible, making it easy to save and load models for research workflows.
+Commonly used with Hugging Face models, especially for transformer-based architectures.
+.pth and .pt are functionally identical; naming is a matter of convention.
+
+Considerations:
+While widely supported within PyTorch, these formats are not natively portable to other frameworks.
+Pickle-based loading poses potential security risks when files come from untrusted sources.
+
+
+SAFETENSORS
+The creation of safetensor was driven by the fact that PyTorch uses pickle under the hood, which is inherently unsafe. (Sources: 1, 2, video, 3)
+With pickle, it is possible to write a malicious file posing as a model that gives full control of a user's computer to an attacker without the user's knowledge, allowing the attacker to steal all their bitcoins 
+While this vulnerability in pickle is widely known in the computer security world (and is acknowledged in the PyTorch docs), it’s not common knowledge in the broader ML community.
+Since the Hugging Face Hub is a platform where anyone can upload and share models, it is important to make efforts to prevent users from getting infected by malware.
+
+Safetensors is a serialization format developed by Hugging Face that is specifically designed for efficiently storing and loading large tensors. It provides a lightweight and efficient way to serialize tensors in Python, making it easier to store and load machine learning models.
+Optimized for large tensors: Safetensors uses a combination of efficient serialization and compression algorithms to reduce size of large tensors, making it faster and more efficient than other serialization formats like pickle.
+Cross-platform compatibility: Safetensors can be used to serialize tensors in Python, and the resulting files can be easily loaded in other languages and platforms, including C++, Java, and JavaScript.
+Easy to use: Safetensors provides a simple and intuitive API that makes it easy to serialize and deserialize tensors in Python.
+Fast serialization and deserialization: Safetensors is designed to be fast, and it can serialize and deserialize large tensors quickly, making it ideal for use in deep learning applications.
+Safe and secure: Safetensors uses a checksum mechanism to ensure that serialized tensors are not corrupted during storage or transfer, providing an extra layer of security.
+
+
+While both Safetensors and Pickle can be used for serializing and deserializing Python objects, there are some key differences:
+Safety: Pickle is not considered to be a safe format for storing and sharing data because it can execute arbitrary code during deserialization, which could potentially be a security risk. Safetensors was designed to provide a secure format for storing tensors and models, with features such as encryption and access control.
+Portability: Pickle is designed specifically for Python and is not always compatible with other programming languages. Safetensors is designed to be compatible with various deep learning frameworks and libraries, allowing users to share their models and data across different tools and workflows.
+Performance: Pickle can be slow when serializing and deserializing large Python objects, especially when compared to more optimized serialization formats like Protocol Buffers or Apache Arrow. Safetensors is designed to be fast and efficient for storing and sharing tensors, which are fundamental building blocks of many deep learning models.
+
+Internal Workings of SafeTensors
+File Structure and Metadata
+A safe tensors file is composed of:
+Header: A compact JSON-like section that stores metadata for each tensor (names, shapes, dtypes, and byte offsets). This small header can be read quickly to inspect file contents.
+Data Block: A contiguous binary block where the raw tensor data is stored without compression. This layout enables direct memory mapping.
+
+Zero-Copy Operations
+Memory Mapping: The tensor data is accessed directly from disk using OS-level memory mapping (e.g., via mmap). This means the data is not duplicated in RAM, saving time and memory.
+Reduced Overhead: By bypassing unnecessary memory copies, safe tensors provide faster load times — especially when dealing with large models.
+
+Lazy Loading
+On-Demand Data Access: Instead of loading the entire tensor, you can request only specific slices or keys. This is ideal when only a portion of a model’s weights are needed at any time.
+Memory Savings: Lazy loading minimizes the memory footprint, which is particularly beneficial in distributed or multi-GPU setups where devices may only need part of the data.
+Faster Initialization: By reading only the required portions of the data, the startup time for model initialization is dramatically reduced.
+
+GGML  Generic GPT Model Language
+ggml is a machine learning (ML) library written in C and C++ with a focus on Transformer inference. the “GG” refers to the initials of its originator Georgi Gerganov. The project is open-source and is being actively developed by a growing community. ggml is similar to ML libraries such as PyTorch and TensorFlow, though it is still in its early stages of development and some of its fundamentals are still changing rapidly.
+GGML is a C library that enables efficient inference. It empowers LLMs to run on common hardware, including CPUs and Apple Silicon, using techniques like quantization for speed and efficiency. It boasts features like automatic differentiation, built-in optimization algorithms, and WebAssembly support, making it a versatile tool for developers working with LLMs at the edge.
+GGML uses a binary file format for efficient storage of model weights. The format is agnostic of the machine learning framework, which means your model can be any of Keras, Tensorflow, PyTorch, MXNet, JAX, etc.
+
+Single-File Convenience: Stores model weights, hyperparameters, and vocabulary in one file, simplifying sharing and use.
+CPU-Centric: Optimized for running LLMs efficiently on standard CPUs, making AI more accessible.
+C/C++ Library: Built on a lightweight C/C++ library for performance and portability.
+
+Cons of GGML:
+Limited Metadata: GGML lacks support for storing extra information like model version or configuration, making it less flexible.
+Compatibility Issues: GGML struggled with introducing new features, requiring manual adjustments for older models.
+
+Decoding the GGML File Structure
+GGML files are binary files that house a model's essential components: weights, biases, and other parameters vital for its operation. Here's a breakdown of the key sections:
+
+The Header: The Blueprint of the Model
+The header is the crucial first part of a GGML file. It acts as a blueprint, containing essential metadata that describes the model's architecture and how it's stored. Here's a closer look at the information typically found in the header:
+
+Magic Number: A specific sequence of bytes that identifies the file as a GGML file.
+Version Number: Indicates the version of the GGML format used.
+Tensor Count: The number of tensors (weights, biases) stored in the file.
+Hyperparameters: These describe the model's architecture and training process. Common hyperparameters found in the header include:
+Number of Layers: The depth of the neural network.
+Embedding Dimension: The size of the vector representations for each word or token.
+Number of Attention Heads: (For transformer models) The number of parallel attention mechanisms used.
+Feedforward Dimension: The size of the hidden layers in the feedforward network within each transformer block.
+Vocabulary Size: The total number of unique words or tokens the model can handle.
+Optimizer State (if applicable): Details about the optimizer used during training (e.g., Adam, SGD).
+Quantization Type: This is a critical piece of information. It specifies the method used to quantize the model's weights (e.g., Q8_0, Q4_K_M). This dictates how the weights are interpreted and dequantized during loading.
+The header provides all the necessary context for correctly loading and interpreting the rest of the data in the GGML file. Without it, the stored weights and biases would be meaningless.
+
+Weights: The Core of the Model
+The weights represent the learned parameters of the model. They are typically stored as a dense matrix in row-major order, meaning the elements of each row are stored contiguously in memory. Each element in this matrix is a quantized value, representing the weight's strength.
+
+Biases: Fine-Tuning the Model
+Biases are additional parameters that are added to the weighted sum of inputs in each neuron. They are stored as a vector, with each element corresponding to a neuron and stored in a quantized format.
+
+Other Parameters: Model-Specific Data
+Depending on the specific model, there might be other parameters stored in the GGML file. These can include things like layer normalization parameters, attention masks, or other model-specific data. They are often stored in a dictionary-like format, with keys identifying each parameter and their corresponding quantized values.
+
+Loading a GGML Model: Bringing it to Life
+To load a GGML model and prepare it for use, you'll generally follow these steps:
+
+Read the Header: This is the first and most crucial step. The header provides the model's dimensions, quantization type, and other essential metadata required to interpret the rest of the file.
+Interpret Quantization Type: The header will specify which quantization method was used (e.g., Q8_0, Q4_K_M). This information is vital because it dictates how the stored weights and biases should be dequantized.
+Read the Data: Based on the information from the header, the weights, biases, and any other parameters are read from the file. The quantization type determines how many bytes are read for each weight and how they are interpreted.
+Dequantize (if necessary): If the model was quantized (which is usually the case), the weights and biases need to be dequantized to convert them back to floating-point values that can be used for computation.
+Once loaded and dequantized, the model is ready for inference tasks.
+
+Drawbacks
+Unfortunately, over the last few months, there are a few issues that have become apparent with the existing models:
+
+There's no way to identify which model architecture a given model is for, because that information isn't present
+Similarly, existing programs cannot intelligently fail upon encountering new architectures
+Adding or removing any new hyperparameters is a breaking change, which is impossible for a reader to detect without using heuristics
+Each model architecture requires its own conversion script to their architecture's variant of GGML
+Maintaining backwards compatibility without breaking the structure of the format requires clever tricks, like packing the quantization version into the ftype, which are not guaranteed to be picked up by readers/writers, and are not consistent between the two formats
+
+
+GGUF GPT-Generated Unified Format. GGUF is specially designed to store inference models and perform well on consumer-grade computer hardware. It achieves this by combining the model parameters (weights and biases) with additional metadata for efficient execution. GGUF is clear, extensible, versatile and capable of incorporating new information without breaking compatibility with older models.
+
+GGML was an early effort to make large language models accessible on standard hardware. However, it was limited in terms of flexibility and extensibility. This means that GGML needed manual adjustments and faced compatibility issues as users added new features to address its limitations.
+
+GGUF addresses GGML limitations and allows adding new features while maintaining compatibility with older models. Since GGUF eliminates breaking changes, it eases transitions to newer versions and supports a wide range of models, making it a comprehensive solution
+
+GGUF is a file format for storing models for inference with GGML and executors based on GGML. GGUF is a binary format that is designed for fast loading and saving of models, and for ease of reading. Models are traditionally developed using PyTorch or another framework, and then converted to GGUF for use in GGML.
+
+It is a successor file format to GGML, GGMF and GGJT, and is designed to be unambiguous by containing all the information needed to load a model. It is also designed to be extensible, so that new information can be added to models without breaking compatibility.
+GGUF is a format based on the existing GGJT, but makes a few changes to the format to make it more extensible and easier to use. The following features are desired:
+
+Single-file deployment: they can be easily distributed and loaded, and do not require any external files for additional information.
+Extensible: new features can be added to GGML-based executors/new information can be added to GGUF models without breaking compatibility with existing models.
+mmap compatibility: models can be loaded using mmap for fast loading and saving.
+Easy to use: models can be easily loaded and saved using a small amount of code, with no need for external libraries, regardless of the language used.
+Full information: all information needed to load a model is contained in the model file, and no additional information needs to be provided by the user.
+
+The key difference between GGJT and GGUF is the use of a key-value structure for the hyperparameters (now referred to as metadata), rather than a list of untyped values. This allows for new metadata to be added without breaking compatibility with existing models, and to annotate the model with additional information that may be useful for inference or for identifying the model.
+
+Model weights are the parameters that are learned by a machine learning model during training. GGUF stores these weights efficiently, allowing for quick loading and inference. Quantization methods applied to model weights can further enhance performance and reduce resource consumption.
+Quantization, the process of converting continuous signals into digital formats with fewer possible values, plays a crucial role in GGUF. Quantization enhances efficiency and performance, particularly for hardware with limited resources. By reducing the model size and improving inference speed, quantized models require less computational power, leading to reduced energy consumption. This makes GGUF highly suitable for deployment on edge devices and mobile platforms where power resources are constrained.
+GGUF is also designed to incorporate new features without compromising compatibility with an earlier version. This capability allows adding new data types and metadata, making GGUF future-proof. As machine learning models evolve, GGUF can accommodate these changes, protecting long-term relevance and adaptability.
+
+GGUF's binary format design significantly improves the speed of loading and saving models, which is particularly vital for applications that require quick deployment and inference. Real-time language conversion services and interactive AI systems, for instance, benefit from GGUF's efficient model file handling. The quicker a model can be loaded and used, the better the user experience in these time-sensitive applications.
+
+GGUF stands out due to its compatibility with advanced tuning techniques like low-rank adaptation (LoRA), quantized low-rank adaptation (QLoRA) and adaptive weight quantization (AWQ). These techniques further optimize model performance and resource utilization.
+Moreover, GGUF supports various quant levels, providing flexibility in balancing model accuracy and efficiency. Common quantization schemes that are supported by GGUF include:
+2-bit quantization: Offers the highest compression, significantly reducing model size and inference speed, though with a potential impact on accuracy.
+4-bit quantization: Balances compression and accuracy, making it suitable for many practical applications.
+8-bit quantization: Provides good accuracy with moderate compression, widely used in various applications.
+
+GGUF follow a naming convention of <BaseName><SizeLabel><FineTune><Version><Encoding><Type><Shard>.gguf where each component is delimitated by a - if present. Ultimately this is intended to make it easier for humans to at a glance get the most important details of a model. It is not intended to be perfectly parsable in the field due to the diversity of existing gguf filenames.
+
+For example:
+Mixtral-8x7B-v0.1-KQ2.gguf:
+    Model Name: Mixtral
+    Expert Count: 8
+    Parameter Count: 7B
+    Version Number: v0.1
+    Weight Encoding Scheme: KQ2
+
+Core Features of GGUF
+
+a) Quantization Support
+GGUF supports a range of quantization formats (e.g., 4-bit, 8-bit) to reduce the size of large models, significantly lowering their memory footprint while maintaining adequate precision for inference.
+
+b) Enhanced Metadata Storage
+Unlike GGML, GGUF is capable of storing more extensive metadata about the model, including:
+    Model architecture
+    Tokenization schemes
+    Hyperparameters (e.g., layers, attention heads)
+    Quantization details (precision levels, techniques)
+
+c) Compatibility with Large Models
+GGUF is specifically designed to work with models that are 100GB+ in size, such as LLaMA 2 or GPT-4 derivatives. It optimizes memory usage and ensures that even models of this size can be run on consumer hardware like CPUs and edge devices.
+
+d) Efficient Inference
+GGUF optimizes the inference process, allowing faster execution of models even with low computational power by intelligently utilizing the quantized model weights and data.
+
+Both GGML & GGUF were developed as the size of model increased and there was a need for a more efficient format to store and load models. GGUF was developed to be more extensible and easier to use than GGML, and to be compatible with GGML models. GGUF also supports quantization, which allows for the compression of models to reduce their size and improve performance.
+
+
+ONNX
+ONNX, short for Open Neural Network Exchange, is an open-source framework designed to facilitate the exchange of neural network models among different deep learning frameworks.
+
+The primary goal of ONNX is to break down the barriers between various deep learning frameworks, allowing developers to leverage the strengths of different libraries without getting locked into a single ecosystem. It achieves this by defining a common format for representing deep learning models, which can be understood and executed by multiple frameworks, including TensorFlow and PyTorch, etc.
+This format consists of a computational graph, where nodes represent operations, and edges represent the flow of data. Each node in the graph corresponds to a specific operation, such as convolution, pooling, or activation, and includes attributes that define its behavior.
+
+The core concept of ONNX revolves around a universal representation of computational graphs. These graphs, referred to as data graphs, define the components or nodes of the model and the connections or edges between them. To define these graphs, ONNX utilizes a language- and platform-agnostic data format called ProtoBuff. Moreover, ONNX incorporates a standardized set of types, functions, and attributes that specify the computations performed within the graph, as well as the input and output tensors.
+ONNX is an open-source project that has been jointly developed by Facebook and Microsoft. Its latest version continues to evolve, introducing additional features and expanding support to encompass emerging deep-learning techniques.
