@@ -1,0 +1,9 @@
+https://github.com/sihyeong/Awesome-LLM-Inference-Engine
+https://multimodalai.substack.com/p/the-ai-engineers-guide-to-inference
+https://gautam75.medium.com/ten-ways-to-serve-large-language-models-a-comprehensive-guide-292250b02c11
+https://www.aleksagordic.com/blog/vllm
+https://medium.com/@martiniglesiasgo/anatomy-of-tgi-for-llm-inference-i-6ac8895d903d
+https://medium.com/@plienhar/llm-inference-series-1-introduction-9c78e56ef49d
+https://developer.nvidia.com/blog/mastering-llm-techniques-inference-optimization/
+https://oumi.ai/docs/en/latest/user_guides/infer/inference_engines.html
+
