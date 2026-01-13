@@ -184,3 +184,4 @@ cython_debug/
 llm_fine_tuning/data
 *.jpg
 gen-*.json
+agentic_trading**

@@ -17,7 +17,7 @@ import json
 from openai import AsyncOpenAI
 from agents.extensions.models.litellm_model import LitellmModel
 
-MAX_TURNS = 2
+MAX_TURNS = 7
 
 def get_model(prefix= "OPENAI"):        
 
@@ -46,13 +46,13 @@ class AnalystAgent:
             name="AI & LLM application analyst",
             model=get_model(model_prefix),
             instructions=analyst_prompt,
-            output_type=Outline,
+            output_type=Outline,            
             # Don't use output_type for Anthropic - it doesn't follow JSON mode
-            tools=[google_search, file_writer]
+            tools=[google_search, file_writer, browse]
         )
     
-    async def run(self, current_date, topic, content, file_name):
-        result = await Runner.run(self.analyst_agent, 
+    def run(self, current_date, topic, content, file_name):
+        result = Runner.run_sync(self.analyst_agent, 
             f"current_date: {current_date}\n\n \
             topic: {topic}\n\n \
             content: {str(content)}\n\n \
@@ -72,7 +72,7 @@ class ResearchAgent:
             instructions=research_prompt,
             output_type=ResearchOutput,
             # Don't use output_type for Anthropic - it doesn't follow JSON mode
-            tools=[google_search]
+            tools=[google_search, browse]
         )
     
     def prepare_input(self, topic: Topic):
@@ -88,8 +88,8 @@ class ResearchAgent:
         return query
 
 
-    async def run(self, topic: Topic):
-        result = await Runner.run(self.researcher_agent, f"content: {self.prepare_input(topic)}", max_turns=MAX_TURNS)
+    def run(self, topic: Topic):
+        result = Runner.run_sync(self.researcher_agent, f"content: {self.prepare_input(topic)}", max_turns=MAX_TURNS)
         return result.final_output
        
 
@@ -101,11 +101,11 @@ class BloggerAgent:
             name="AI/LLM Technical Blogger",
             model=get_model(model_prefix),
             instructions=blogger_prompt,
-            tools=[google_search, blog_writer]
+            tools=[google_search, blog_writer, browse]
         )
 
-    async def run(self, blog_name: str, research: str):
-        result = await Runner.run(self.blogger_agent, f"blog_name: {blog_name}\n\nresearch: {research}", max_turns=MAX_TURNS)
+    def run(self, blog_name: str, research: str):
+        result = Runner.run_sync(self.blogger_agent, f"blog_name: {blog_name}\n\nresearch: {research}", max_turns=MAX_TURNS)
         return result.final_output
 
 
@@ -116,9 +116,9 @@ class EditorAgent:
             name="AI/LLM Technical Editor",
             model=get_model(model_prefix),
             instructions=editor_prompt,
-            tools=[google_search, blog_writer]
+            tools=[google_search, blog_writer, browse]
         )
 
-    async def run(self, blog_name: str, blog: str):
-        result = await Runner.run(self.editor_agent, f"blog_name: {blog_name}\n\nblog: {blog}", max_turns=MAX_TURNS)
+    def run(self, blog_name: str, blog: str):
+        result = Runner.run_sync(self.editor_agent, f"blog_name: {blog_name}\n\nblog: {blog}", max_turns=MAX_TURNS)
         return result.final_output

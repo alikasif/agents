@@ -4,6 +4,7 @@ from pydantic import BaseModel
 
 class Topic(BaseModel):
     topic: str
+    urls: list[str]
     sub_topics: list[str]
     content: str
     
@@ -22,7 +23,7 @@ class Topic(BaseModel):
             return cls(**data)
         except:
             # Fallback: return with empty fields if parsing fails
-            return cls(topic=s, sub_topics=[], content="")
+            return cls(topic=s, urls=[], sub_topics=[], content="")
 
 
 class Outline(BaseModel):

@@ -1,0 +1,8 @@
+
+zero shot prompting
+few shot prompting
+chain of thought prompting
+self consistency prompting
+long chain of thought
+parallel decoding
+self refinement

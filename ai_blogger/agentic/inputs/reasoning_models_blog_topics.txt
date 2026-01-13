@@ -1,0 +1,262 @@
+
+## 1. What Are Reasoning Models?
+
+Reasoning models are a novel category of language models (LMs) designed to tackle complex problems by breaking them down into smaller, structured steps and solving them through explicit logical reasoning. These models—often referred to as **Reasoning Language Models (RLMs)** or **Large Reasoning Models (LRMs)**—are gaining prominence due to their ability to perform systematic, multi-step reasoning rather than relying on shallow pattern matching.
+
+---
+
+## 2. Early Prompt-Based Reasoning: Chain-of-Thought Foundations
+
+One of the earliest observations in LLM reasoning research was that **simply including instructions like “Let’s think step by step”** in prompts dramatically enhanced reasoning performance.
+
+This led to the development of **Chain-of-Thought (CoT)** prompting, where models are encouraged to decompose problems into intermediate reasoning steps before producing a final answer.
+
+### Key Zero-Shot and Sampling-Based Techniques
+
+* **Zero-shot CoT**
+  Break the problem into subproblems using a prompt such as *“think step by step.”*
+
+* **Self-consistency**
+  Generate multiple reasoning paths to solve the same problem and compare the outputs. The majority vote (or most consistent answer) is selected as the final result.
+
+These techniques showed that reasoning could be *elicited* from models without retraining—but they also revealed important limitations.
+
+---
+
+## 3. Limits of Standard Chain-of-Thought
+
+Although effective, **standard CoT has structural weaknesses**:
+
+* Intermediate steps are **unverified**
+* All steps are **unweighted** against alternatives
+* A single incorrect step can invalidate the final answer
+
+As a result, CoT-like methods often encourage *surface-level reasoning* without enabling models to truly internalize or evaluate reasoning processes.
+
+This limitation motivated more structured reasoning frameworks.
+
+---
+
+## 4. Advanced Reasoning Structures: Tree-Based and Graph-Based Thinking
+
+### Tree of Thoughts (ToT)
+
+Tree of Thoughts extends CoT by exploring multiple reasoning paths at each step:
+
+* At every step, generate multiple candidate paths
+* Discard paths that violate constraints or fail progress checks
+* Backtrack and continue exploring until a valid solution is found
+
+This approach explicitly models **search and backtracking**, rather than relying on a single linear chain.
+
+---
+
+## 5. Long Chain-of-Thought in Reasoning Models
+
+The Chain-of-Thought used by modern reasoning models is **fundamentally different** from standard CoT.
+
+### Standard CoT
+
+* Concise
+* Human-readable
+* Intended for interpretability
+
+### Long CoT (Used by Reasoning Models)
+
+* Often **thousands of tokens**
+* Not optimized for human readability
+* Contains complex behaviors such as:
+
+  * Backtracking
+  * Self-refinement
+  * Hypothesis testing
+  * Constraint checking
+
+Importantly, reasoning models **logically separate** this long CoT from the final output.
+
+For example, OpenAI avoids exposing the raw long CoT directly. Instead, it provides:
+
+* A **final answer**
+* An **LLM-generated summary** of the reasoning
+
+This separation is necessary because most users would not read an extensive reasoning trace.
+
+---
+
+## 6. Parallel Decoding and Self-Refinement
+
+### Parallel Decoding
+
+Rather than generating a single response, the model generates **multiple candidate outputs**, which are then aggregated.
+
+Aggregation strategies include:
+
+* Majority vote
+* Consensus methods
+* Weighted voting
+* Best-of-N or rejection sampling
+* Neural reward models or verifiers
+* Domain-specific selection algorithms
+
+### Self-Refinement
+
+Beyond parallel decoding, models can refine answers iteratively:
+
+1. Generate an initial response
+2. Receive feedback
+3. Revise the response
+4. Repeat for multiple iterations
+
+#### Types of Feedback
+
+* **Extrinsic**: from an external verifier or module
+* **Intrinsic**: the model critiques its own output
+
+---
+
+## 7. Internal Algorithms Used by Reasoning Models
+
+RLMs may incorporate advanced decision-making and optimization techniques such as:
+
+* Long Chain-of-Thought (CoT)
+* Test time search
+* Mixture of expert 
+Together, these mechanisms allow models to reason, evaluate, revise, and select solutions systematically.
+
+---
+
+## 8. Compute Scaling Laws and Reasoning
+
+### LLM Scaling Law
+
+Originally formulated for training, scaling laws state that:
+
+> Giving an LLM more compute leads to near-linear performance improvements.
+
+Crucially, this insight applies **not only to training**, but also to **inference**.
+
+---
+
+## 9. Train-Time Compute vs Test-Time Compute
+
+### Test-Time Compute (Inference-Time Compute)
+
+Test-Time Compute refers to the computational resources used **after training**, during inference.
+
+Rather than being a mere technical detail, it represents a shift in how AI systems allocate computation.
+
+Research has shown that:
+
+* Scaling laws governing Train-Time Compute also apply to Test-Time Compute
+* Increasing Train-Time Compute can reduce Test-Time Compute requirements (Jones, 2021)
+* Conversely, increasing Test-Time Compute enables deeper reasoning
+
+This has shifted attention toward inference optimization rather than pure pre-training.
+
+---
+
+## 10. Why Test-Time Compute Matters
+
+By allocating more compute during inference, models can:
+
+* Explore multiple reasoning paths
+* Perform iterative self-correction
+* Engage in deeper “thinking”
+
+This capability is especially important for:
+
+* Autonomous AI agents
+* Open-ended reasoning tasks
+* Complex decision-making scenarios
+
+---
+
+## 11. Empirical Evidence: Small Models with More Thinking
+
+Research demonstrates that **increasing Test-Time Compute can allow smaller models to outperform much larger ones**.
+
+Key findings:
+
+* Beeching et al. (2024):
+  After 256 iterations, Llama-3.2 3B outperformed Llama-3.1 70B.
+
+* Snell et al. (2024):
+  With additional inference compute, PaLM 2-S outperformed a model 14× larger.
+
+* Brown et al. (2024):
+  Using repeated sampling:
+
+  * Single-pass accuracy: 15.9%
+  * After 250 attempts: 56%
+  * Surpassed previous best single-pass score of 43%
+
+These results suggest a paradigm shift:
+
+> Increasing a model’s ability to *think* can rival—or exceed—scaling model size alone.
+
+---
+
+## 12. Limitations of Test-Time Compute
+
+Despite its benefits, Test-Time Compute is **not a replacement** for large-scale pre-training.
+
+Key limitations:
+
+* If a model lacks foundational knowledge, additional reasoning cannot compensate
+* Snell et al. (2024) found that for very hard problems, small models plateau despite extensive reasoning
+* Majority voting reaches diminishing returns for unverifiable tasks after a few hundred iterations (Brown et al., 2024)
+
+In short:
+
+* Train-Time Compute builds knowledge
+* Test-Time Compute refines and exploits that knowledge
+
+Both are complementary, not interchangeable.
+
+---
+
+## 13. Emerging Frontier: Test-Time Training
+
+One of the most cutting-edge research directions is **Test-Time Training**, which blurs the boundary between training and inference.
+
+This approach allows models to:
+
+* Make micro-adjustments to parameters during inference
+* Adapt dynamically to the task at hand
+
+An analogy is a student revising key facts just before an exam.
+
+Although still in early stages, Test-Time Training could fundamentally change AI adaptability and post-deployment learning.
+
+---
+
+## 14. Reasoning Frameworks and Patterns
+
+Several structured frameworks have emerged to formalize reasoning behavior:
+
+* **ReAct Pattern**
+  Mix reasoning and action, continuously evaluating how far the current state is from the solution and self-correcting at each step.
+
+* **Program-Aided Models**
+  Write and execute small programs to solve parts of the problem.
+
+* **Reflexion**
+  Review one’s own reasoning steps, identify errors, and correct them.
+
+* **Least-to-Most Reasoning**
+  Solve easier subproblems first, then progressively move to more complex ones.
+
+These frameworks move beyond prompting into **algorithmic reasoning control**.
+
+
+## 15. Summary Perspective
+
+Reasoning models represent a shift from:
+
+* Static, single-pass generation
+  to
+* Dynamic, multi-step, compute-aware reasoning systems
+
+They combine structured reasoning frameworks, long internal reasoning traces, parallel decoding, and test-time compute scaling to achieve significantly stronger problem-solving capabilities—without relying solely on larger model sizes.
+
+---

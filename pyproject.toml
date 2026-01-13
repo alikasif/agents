@@ -236,7 +236,7 @@ dependencies = [
     "agent-framework-anthropic==1.0.0b251211",
     "agent-framework-azurefunctions>=1.0.0b251211",
     "onnxruntime ~= 1.21.1",
-    "litellm[proxy]==1.80.9",
+    "litellm[proxy]==1.80.11",
     "dspy>=3.0.3",
     "grpcio>=1.67.1",
     "uvicorn>=0.31.1",

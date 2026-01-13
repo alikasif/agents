@@ -8,6 +8,12 @@ from dotenv import load_dotenv
 from structured_output import *
 import logging
 import os
+from langchain_community.agent_toolkits import PlayWrightBrowserToolkit
+from langchain_community.tools.playwright.utils import (
+    create_sync_playwright_browser,
+)
+
+
 logging.basicConfig(level=logging.INFO) # Set the root logger level to INFO
 
 
@@ -109,11 +115,40 @@ def google_search(query:str) -> str:
         queries = query.split(",")
         for query in queries:
             time.sleep(5)
-            #logging.info(f"\n\n-- running google_search for  {query}")
+            logging.info(f"\n\n-- running google_search for  {query}")
             search = GoogleSerperAPIWrapper()
             result = search.run(query)
             results.append(result)
         return "\n".join(results)
+
+
+@function_tool
+def browse(url: str) -> str:
+    """
+    This tool navigates to web page and extracts their content using a headless browser.
+    It uses Playwright to automate browser interactions and retrieve page elements.
+    
+    Args:
+        url: A URL to browse and extract content from        
+    
+    Returns:
+        Combined text content from the page, joined by newlines
+    """
+    sync_browser = create_sync_playwright_browser()
+    toolkit = PlayWrightBrowserToolkit.from_browser(sync_browser=sync_browser)
+    tools = toolkit.get_tools()
+
+    tools_by_name = {tool.name: tool for tool in tools}
+    navigate_tool = tools_by_name["navigate_browser"]
+    get_elements_tool = tools_by_name["get_elements"]
+    
+    responses =[]
+    logging.info(f"\n\n-- running browse for  {url}")
+    navigate_tool.run(url)
+    response = get_elements_tool.run("body")
+    responses.append(response)
+    
+    return "\n".join(responses)
 
 
 @function_tool

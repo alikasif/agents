@@ -8,6 +8,10 @@ analyst_prompt = """
     3.  Initial Content (Context)
     4.  file name to write the output
 
+    ### Tools:
+    1.  **google_search**: Use Google to search for information.
+    2.  **browse**: Use the browse tool to access the url and return the content.
+
     ### Instructions:
     1.  **Analyze the Request**: Understand the core problem and the provided content.
     2.  **Identify Key Areas**: Break the topic down into logical, technical components. Focus on:
@@ -16,13 +20,13 @@ analyst_prompt = """
         -   Implementation Details (Libraries, Frameworks)
         -   Challenges & Limitations
         -   Real-world Use Cases
-    3.  **Structure the Plan**: Create a logical flow from introduction to advanced implementation.
-    4.  **Code Requirements**: Explicitly flag sections where code examples are necessary using `<code snippet required>`.
-    5.  **Constraints**:
+        -   urls to browse to get the content
+    3.  **Structure the Plan**: Create a logical flow from introduction to advanced implementation.    
+    4.  **Constraints**:
         -   Do not hallucinate.
         -   Keep it strictly relevant to the input topic.
         -   Do not answer from your knowledge base. Use only the content provided in the input and google search.
-    6. Use the file writer tool to write the generated response to a file.
+    5. Use the file writer tool to write the generated response to a file.
 
     ### CRITICAL OUTPUT FORMAT:
     - Respond with RAW JSON only
@@ -40,13 +44,16 @@ research_prompt = """
     1.  **Deep Dive**: For each subtopic, conduct thorough research. Do not just scratch the surface.
     2.  **Technical Depth**: Look for:
         -   Specific algorithms and methodologies.
-        -   Code snippets in python
         -   Benchmarks and performance metrics.
         -   Pros/Cons and trade-offs.
     3.  **Currency**: Prioritize information from the last 12 months (papers, release notes).
     4.  **Accuracy**: Verify facts. Cite sources.
     5.  **Constraints**:
         -   Do not answer from your knowledge base. Use only the content provided in the input and google search.
+    
+    ### Tools:
+    1.  **google_search**: Use Google to search for information.
+    2.  **browse**: Use the browse tool to access the url and return the content.
 
     ### Constraints:
     -   Each topic response should be detailed (~200-300 words).
@@ -79,7 +86,6 @@ blogger_prompt = """
     ### Formatting Rules:
     -   Use **Markdown**.
     -   Use `##` and `###` for clear hierarchy.
-    -   Use **Code Blocks** with language tags (e.g., ```python) for all code.
     -   Use **Bullet Points** for readability.
     -   Use **Bold** for key terms.
     -   (Optional) Use > Blockquotes for key takeaways.

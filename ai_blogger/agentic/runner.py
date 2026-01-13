@@ -15,11 +15,9 @@ logging.basicConfig(level=logging.INFO) # Set the root logger level to INFO
 def analysis(goal, user_input: str, file_name: str):
     
     agent = AnalystAgent(model_prefix="GEMINI")
-    response = asyncio.run(
-        agent.run(
+    response = agent.run(
             topic=goal, content=user_input, current_date=current_date_str(), file_name=file_name
             )
-        )
     
     return response
 
@@ -28,14 +26,13 @@ def research(topic_to_research: Topic):
    
     agent = ResearchAgent(model_prefix="GEMINI")
     time.sleep(10)
-    response = asyncio.run(agent.run(topic=topic_to_research))
+    response = agent.run(topic=topic_to_research)
     return response
 
 
 def blog(blog_name: str, detailed_research: str):
 
-    response = asyncio.run(
-        BloggerAgent(model_prefix="GEMINI").run(blog_name, detailed_research))
+    response = BloggerAgent(model_prefix="GEMINI").run(blog_name, detailed_research)
     return response
 
 
@@ -46,13 +43,13 @@ def edit(blog_name: str, blog: str):
         return
     
     edited_blog_name = f"{blog_name}_edited"
-    response = asyncio.run(editor_agent.run(edited_blog_name, blog))
+    response = editor_agent.run(edited_blog_name, blog)
     return response
 
 def start():
     
-    goal= "LLM Inference Gateway. Challenges, Features & Comparisons across various LLM Inference Gateways"
-    blog_name = "llm_gw_blog"
+    goal= "Reasoning Models. How they work?"
+    blog_name = "reasoning_models_blog"
 
     topics_file_name=f".\\ai_blogger\\agentic\\inputs\\{blog_name}_topics.txt"
     analyst_file_name=f".\\ai_blogger\\agentic\\inputs\\{blog_name}_analyst_output.txt"
