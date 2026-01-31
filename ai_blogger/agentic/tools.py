@@ -13,9 +13,7 @@ from langchain_community.tools.playwright.utils import (
     create_sync_playwright_browser,
 )
 
-
 logging.basicConfig(level=logging.INFO) # Set the root logger level to INFO
-
 
 @function_tool
 def blog_writer(blog_name: str, content: str) -> str:
@@ -96,6 +94,7 @@ def tavily_google_search(query: str) -> str:
     results = tool.invoke({"query": query})
     print(results)
 
+
 @function_tool
 def google_search(query:str) -> str:
         """
@@ -120,6 +119,41 @@ def google_search(query:str) -> str:
             result = search.run(query)
             results.append(result)
         return "\n".join(results)
+
+
+@function_tool
+def browse_urls(urls: list[str]) -> str:
+    """
+    This tool navigates to web page and extracts their content using a headless browser.
+    It uses Playwright to automate browser interactions and retrieve page elements.
+    
+    Args:
+        url: URLs to browse and extract content from        
+    
+    Returns:
+        Combined text content from the page, joined by newlines
+    """
+
+    logging.info(f"\n\n-- running browse_urls for  {urls}")
+
+    sync_browser = create_sync_playwright_browser()
+    toolkit = PlayWrightBrowserToolkit.from_browser(sync_browser=sync_browser)
+    tools = toolkit.get_tools()
+
+    tools_by_name = {tool.name: tool for tool in tools}
+    navigate_tool = tools_by_name["navigate_browser"]
+    get_elements_tool = tools_by_name["get_elements"]
+    
+    logging.info(f"\n\n-- browsing each url using tools")
+
+    responses =[]
+    for url in urls:
+        logging.info(f"\n\n-- running browse for {url}")
+        navigate_tool.run(url)
+        response = get_elements_tool.run("body")
+        responses.append(response)
+    
+    return "\n".join(responses)
 
 
 @function_tool
@@ -208,3 +242,16 @@ def think_tool(reflection: str) -> str:
 
 # load_dotenv(override=True)
 # tavily_google_search("what is US shutdown?")
+
+# urls = [
+#         "https://github.com/sihyeong/Awesome-LLM-Inference-Engine",
+#         "https://multimodalai.substack.com/p/the-ai-engineers-guide-to-inference",
+#         "https://gautam75.medium.com/ten-ways-to-serve-large-language-models-a-comprehensive-guide-292250b02c11",
+#         "https://www.aleksagordic.com/blog/vllm",
+#         "https://medium.com/@martiniglesiasgo/anatomy-of-tgi-for-llm-inference-i-6ac8895d903d",
+#         "https://medium.com/@plienhar/llm-inference-series-1-introduction-9c78e56ef49d",
+#         "https://developer.nvidia.com/blog/mastering-llm-techniques-inference-optimization/",
+#         "https://oumi.ai/docs/en/latest/user_guides/infer/inference_engines.html"
+#     ]
+# content = browse_urls(urls)
+# print(content)
