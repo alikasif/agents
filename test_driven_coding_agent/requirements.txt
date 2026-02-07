@@ -1,0 +1,4 @@
+openai-agents
+litellm
+pytest>=7.0.0
+python-dotenv

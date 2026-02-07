@@ -6,7 +6,7 @@ class CustomHooks(RunHooks):
         # Note: Accessing specific tool arguments directly in on_tool_start might require
         # accessing the context object's internal structure or checking recent SDK updates,
         # as a previous issue noted this limitation.
-        print(f"--- Hook: Agent '{agent.name}' is starting tool: '{tool.name}' with args: {context.tool_arguments} ---")
+        print(f"--- Hook: Agent '{agent.name}' is starting \n tool: '{tool.name}' with args: {context.tool_arguments} ---")
         user_input = input("type yes to continue...")
         if user_input.lower() != "yes":
             raise Exception("User did not confirm execution.")
