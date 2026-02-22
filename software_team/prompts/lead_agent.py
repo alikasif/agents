@@ -30,6 +30,7 @@ LEAD_AGENT_PROMPT = """
         - database_testing_agent: DB tests (migrations, schema)
         - frontend_testing_agent: Frontend tests (Jest/Vitest)
         - documentation_agent: API docs, user guides, README
+        - devops_agent: Writes Dockerfile & docker-compose.yml, builds the Docker image, and runs it on local Docker Desktop
 
         Available reviewer agents:
         - frontend_reviewer_agent
@@ -41,6 +42,9 @@ LEAD_AGENT_PROMPT = """
         - planning_agent (spawned first for research)
         - project_structure_agent (spawned after plan)
         - github_agent (spawned with specialists)
+
+        Deployment agents (spawned after all coding tasks are done and reviewed):
+        - devops_agent (spawned last, after all reviews pass)
     </instructions>
 
     <tools>

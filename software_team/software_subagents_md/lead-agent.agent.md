@@ -83,6 +83,12 @@ When invoking subagents:
 - Instruct to poll task_list.json for `done` tasks and review them.
 
 **github-subagent**: Provide repo URL, branch, auth. Instruct to push periodically.
+
+**devops-subagent**: Spawn ONLY after all coding tasks are `done` and all reviews have passed.
+- Provide: project name, runtime, exposed ports, environment variables, and the project root path.
+- Instruct to write Dockerfile, docker-compose.yml, and .dockerignore.
+- Instruct to build the Docker image and run it with `docker compose up -d` on local Docker Desktop.
+- Instruct to verify container health and report container IDs, mapped ports, and logs.
 </subagent_instructions>
 
 <cross_layer_coordination>
@@ -103,15 +109,16 @@ For features spanning Database, Backend, and Frontend:
 </cross_layer_coordination>
 
 <agent_selection_guide>
-| Requirement Signal              | Agents to Spawn                                    |
-|---------------------------------|----------------------------------------------------|
-| UI / frontend / React / HTML    | frontend, frontend-reviewer, frontend-test         |
-| Python / FastAPI / Flask        | python-coder, backend-reviewer, python-test        |
-| Java / Spring Boot              | java-coder, backend-reviewer, java-test            |
-| Database / SQL / schema         | database, database-reviewer, database-test         |
-| Docs / README / API docs        | documentation                                      |
-| Any code task                   | architecture-reviewer (always when ≥2 code agents) |
-| Any task                        | project-structure (always), github (always)        |
+| Requirement Signal              | Agents to Spawn                                                       |
+|---------------------------------|-----------------------------------------------------------------------|
+| UI / frontend / React / HTML    | frontend, frontend-reviewer, frontend-test                            |
+| Python / FastAPI / Flask        | python-coder, backend-reviewer, python-test                           |
+| Java / Spring Boot              | java-coder, backend-reviewer, java-test                               |
+| Database / SQL / schema         | database, database-reviewer, database-test                            |
+| Docs / README / API docs        | documentation                                                         |
+| Any code task                   | architecture-reviewer (always when ≥2 code agents)                   |
+| Any task                        | project-structure (always), github (always)                           |
+| Deployable application          | devops (spawned last, after all coding tasks done and reviews passed) |
 </agent_selection_guide>
 
 <stopping_rules>
