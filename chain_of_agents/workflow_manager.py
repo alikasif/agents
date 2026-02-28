@@ -3,16 +3,15 @@ manager will get the document to process along with a goal prompt. its job is to
 create worker agents for each chunk, and manage the flow of information between them.
 """
 
-from chunker import Chunker
-from workers import WorkerAgent 
-from data_classes import InformationChunk
-from llm import LLM
+from tools import Chunker, LLM
+from agents import WorkerAgent 
+from dataclasses import InformationChunk
 import os
 import time
 from prompts import manager_system_message, manager_user_prompt
 from dotenv import load_dotenv
 
-class ManagerAgent:
+class WorkflowManager:
 
     def __init__(self, document_path: str, user_goal: str, chunk_size: int = 1000, start_page: int = 0):
         load_dotenv(override=True)

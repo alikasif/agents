@@ -1,16 +1,16 @@
-from chain_of_agents.workflow_manager import ManagerAgent
+from chain_of_agents.workflow_manager import WorkflowManager
 from dotenv import load_dotenv
-from chunker import Chunker
+from tools import Chunker
 from graph import ChainofAgentsGraph
 
 def test_chunker():
     chunker = Chunker(10000, 45)
-    chunks = chunker.chunk("chain_of_agents\data\economic_survey_2023_24.pdf")
+    chunks = chunker.chunk(r"chain_of_agents\data\economic_survey_2023_24.pdf")
     print(f"Total chunks created: {len(chunks)}")
 
 def process_through_graph():
     graph = ChainofAgentsGraph(
-        "chain_of_agents\data\economic_survey_2023_24.pdf",
+        r"chain_of_agents\data\economic_survey_2023_24.pdf",
         "Provide a consice summary of the documents with highlights on key economic indicators, trends and lowlights",
         chunk_size=10000, start_page=45
     )
@@ -22,8 +22,8 @@ def process_through_graph():
 
 
 def process_thru_manager():
-    manager = ManagerAgent(
-        "chain_of_agents\data\economic_survey_2023_24.pdf",
+    manager = WorkflowManager(
+        r"chain_of_agents\data\economic_survey_2023_24.pdf",
         "Provide a consice summary of the documents with highlights on key economic indicators, trends and lowlights",
         chunk_size=10000, start_page=45
     )

@@ -1,9 +1,14 @@
 from langchain_experimental.text_splitter import SemanticChunker
 from langchain_openai.embeddings import OpenAIEmbeddings
-from data_classes import InformationChunk
+from langchain_openai import ChatOpenAI
+from dataclasses import InformationChunk
 from langchain_community.document_loaders import PyPDFLoader
+from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_core.prompts import ChatPromptTemplate
 from typing import List
 from dotenv import load_dotenv
+import os
+
 
 class Chunker:
     def __init__(self, chunk_size: int, start_page: int = 0):
@@ -52,3 +57,27 @@ class Chunker:
             print(f"\nCreated chunk: {chunk}")
         
         return doc_chunks
+
+
+class LLM:
+
+    def __init__(self, structured_output_class: type = None):
+        self.llm = ChatOpenAI(api_key=os.getenv("OPENAI_API_KEY"), model=os.getenv("OPENAI_MODEL"))
+        self.llm = self.llm if not structured_output_class else self.llm.with_structured_output(structured_output_class)
+
+    def invoke(self, system_prompt: str, user_prompt: str) -> str:
+
+        messages = [
+                SystemMessage(content=system_prompt),
+                HumanMessage(content=user_prompt)
+            ]
+        
+        prompt_template = ChatPromptTemplate.from_messages(messages)
+
+       
+        prompt_llm = prompt_template | self.llm
+
+        result = prompt_llm.invoke({})
+            
+        # Placeholder for actual LLM API call
+        return result

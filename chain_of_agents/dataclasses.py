@@ -15,7 +15,7 @@ class InformationChunk:
         return f"InformationChunk({self.start_idx}:{self.end_idx})"
 
 
-class WrokerAgentResult(BaseModel):
+class WorkerAgentResult(BaseModel):
     name: str
     previous_result: str
     current_result: str
@@ -24,5 +24,5 @@ class WrokerAgentResult(BaseModel):
 class ChainOfAgentState(TypedDict):
     goal: str
     chunks: list[InformationChunk]
-    worker_agent_results: list[WrokerAgentResult]
+    worker_agent_results: list[WorkerAgentResult]
     final_summary: str

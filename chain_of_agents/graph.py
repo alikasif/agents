@@ -1,7 +1,6 @@
-from chunker import Chunker
-from workers import WorkerAgent 
-from manager_agent import ManagerAgent
-from data_classes import ChainOfAgentState
+from tools import Chunker
+from agents import WorkerAgent, ManagerAgent
+from dataclasses import ChainOfAgentState
 from prompts import manager_system_message
 from langgraph.graph import StateGraph, START, END
 
