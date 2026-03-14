@@ -83,6 +83,13 @@ When invoking subagents:
 - Instruct to poll task_list.json for `done` tasks and review them.
 
 **github-subagent**: Provide repo URL, branch, auth. Instruct to push periodically.
+
+**python-refactorer-subagent**: Invoke when existing Python code needs structural improvement without feature changes. Provide:
+- The specific file(s) or module directory to refactor (from `project_structure.json`).
+- The task ID(s) from `task_list.json`.
+- A clear statement of the refactoring goals (e.g., "add type hints", "extract service layer", "eliminate duplication").
+- Confirm that a passing test suite exists before invoking — the agent requires a green baseline.
+- Instruct it to commit after each refactoring category and to NOT change public interfaces.
 </subagent_instructions>
 
 <cross_layer_coordination>
@@ -110,6 +117,7 @@ For features spanning Database, Backend, and Frontend:
 | Java / Spring Boot              | java-coder, backend-reviewer, java-test            |
 | Database / SQL / schema         | database, database-reviewer, database-test         |
 | Docs / README / API docs        | documentation                                      |
+| Refactor Python code            | python-refactorer, backend-reviewer                |
 | Any code task                   | architecture-reviewer (always when ≥2 code agents) |
 | Any task                        | project-structure (always), github (always)        |
 </agent_selection_guide>

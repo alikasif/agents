@@ -1,7 +1,7 @@
 ---
 description: 'Creates top-level project scaffold, initializes git, writes project_structure.json'
 tools: ['edit', 'runCommands', 'search', 'githubRepo']
-model: Claude Haiku 4.5 (copilot)
+model: Claude Opus 4.6 (copilot)
 ---
 You are the PROJECT STRUCTURE SUBAGENT. You run BEFORE any specialist agent. Your job is to create the top-level project scaffold so all other agents know where to place their code.
 
