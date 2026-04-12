@@ -25,5 +25,23 @@ def is_key_working(key_prefix):
 
     print(f"\n\nresponse: {response.choices[0].message.content}")
 
+def is_local_model_working():
+    print("\nchecking for local model")
+    print(f"\nAPI_KEY: {os.getenv('LOCAL_MODEL_API_KEY')}")
+    print(f"\nBASE_URL: {os.getenv('LOCAL_MODEL_BASE_URL')}")
+    print(f"\nMODEL: {os.getenv('LOCAL_MODEL_NAME')}")
 
-is_key_working("GEMINI")
+    client = OpenAI(api_key=os.getenv("LOCAL_MODEL_API_KEY"),
+                    base_url=os.getenv("LOCAL_MODEL_BASE_URL"))
+
+    response = client.chat.completions.create(
+        model=os.getenv("LOCAL_MODEL_NAME"),
+        messages=[
+            {"role": "user", "content": "Write a one-sentence bedtime story about a unicorn."}
+        ]
+    )
+
+    print(f"\n\nresponse: {response.choices[0].message.content}")
+
+#is_key_working("GEMINI")
+is_local_model_working()
